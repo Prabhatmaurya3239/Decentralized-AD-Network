@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center my-5">
+    <h1 class="fw-bold" style="color: #80ff00;">AdChain: The Future of Advertising</h1>
+    <p  style="color: #e6ebe7;" class=" fs-5">A decentralized, transparent, and efficient ad network powered by blockchain technology. Connect your wallet to get started.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <!-- Live Token Price Chart -->
+        <div class="card bg-dark text-white border border-success" style="box-shadow: 0 0 10px #0f0;">
+            <div class="card-header border-bottom border-success d-flex align-items-center">
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-primary"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+                <h5 class="mb-0 text-white">Live Token Price <span class="text-secondary">(ADC/ETH)</span></h5>
+            </div>
+            <div class="card-body">
+                <canvas id="priceChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- ETH to Token Rate -->
+        <div class="card bg-dark text-white border border-success mt-4">
+            <div class="card-body text-center">
+                <h5>Current Exchange Rate</h5>
+                <h2 style="color: #80ff00;">1 ETH = <span id="tokenRate">1000</span> ADC Tokens</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        {% if not user_profile %}
+        <!-- Connect Wallet UI (Dark, Glowing) -->
+        <div class="card bg-transparent border border-gray-700 rounded-lg text-white text-center shadow-sm h-100" style="border: 1px solid #444;">
+            <div class="card-body">
+                <i class="bi bi-wallet2 mb-3" style="font-size: 2.5rem; color: #80ff00;"></i>
+                <h5 class="fw-bold text-white">Connect Your Wallet</h5>
+                <p class="text-muted small">Get started by connecting your MetaMask wallet to view your dashboard.</p>
+                <button id="connectWalletHome" class="btn btn-dark border border-success text-success px-4 mt-2">Connect Wallet</button>
+            </div>
+        </div>
+        {% else %}
+        <!-- Connected User Summary (Dark Style) -->
+        <div class="bg-dark text-white p-4 rounded border border-success shadow-sm">
+            <h5 class="text-success">👤 Connected Wallet</h5>
+            <div class="mt-2">
+                    <p class="mb-1"><strong>Address:</strong> {{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}</p>
+                <p class="mb-1"><strong>Role:</strong> {{ user_profile.role|title }}</p>
+                <p class="mb-1"><strong>ETH:</strong> {{ user_profile.eth_balance }} ETH</p>
+                <p class="mb-1"><strong>ADC:</strong> {{ user_profile.token_balance }} ADC</p>
+            </div>
+            <a href="/{{ user_profile.role }}_dashboard/" class="btn btn-outline-success mt-3 w-100">Go to Dashboard</a>
+        </div>
+        {% endif %}
+
+        <!-- Platform Stats -->
+        <div class="card bg-dark text-white border border-success mt-4">
+            <div class="card-header border-bottom border-success">
+                <h6 class="mb-0">Platform Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <span>Total Publishers:</span>
+                    <strong>1,234</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Total Advertisers:</span>
+                    <strong>567</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Videos Available:</span>
+                    <strong>8,901</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Total Ad Views:</span>
+                    <strong>2.3M</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    const priceData = [];
+    const timeLabels = [];
+
+    const priceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: timeLabels,
+            datasets: [{
+                label: 'ADC Token Price (USD)',
+                data: priceData,
+                borderColor: '#80ff00',
+                backgroundColor: 'rgba(128, 255, 0, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: { color: '#999' },
+                    title: {
+                        display: true,
+                        text: 'Price (USD)',
+                        color: '#ccc'
+                    }
+                },
+                x: {
+                    ticks: { color: '#999' },
+                    title: {
+                        display: true,
+                        text: 'Time',
+                        color: '#ccc'
+                    }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#ccc' } }
+            }
+        }
+    });
+
+    function updatePrice() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+
+        const basePrice = 1000;
+        const variation = Math.sin(Date.now() / 10000) * 50;
+        const currentPrice = basePrice + variation + (Math.random() - 0.5) * 20;
+
+        timeLabels.push(timeString);
+        priceData.push(currentPrice.toFixed(2));
+
+        if (timeLabels.length > 20) {
+            timeLabels.shift();
+            priceData.shift();
+        }
+
+        priceChart.update('none');
+        const tokenRate = Math.floor(currentPrice);
+        const tokenRateElem = document.getElementById('tokenRate');
+        if (tokenRateElem) tokenRateElem.textContent = tokenRate;
+    }
+
+    setInterval(updatePrice, 2000);
+    updatePrice();
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const connectButtonHome = document.getElementById('connectWalletHome');
+        if (connectButtonHome) connectButtonHome.addEventListener('click', connectWallet);
+    });
+</script>
+{% endblock %}

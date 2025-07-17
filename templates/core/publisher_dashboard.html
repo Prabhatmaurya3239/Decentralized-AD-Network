@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Publisher Dashboard - AdChain{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <!-- 🔐 Wallet Info -->
+        <div class="wallet-info p-4 rounded border border-success shadow-sm mb-4" style="background-color: #111827; box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
+            <h5 class="fw-bold mb-3" style="color: #80ff00;">
+                <i class="bi bi-camera-video-fill me-2"></i>Publisher Dashboard
+            </h5>
+            <div class="mb-2">
+                <small class="text-muted">Wallet</small><br>
+                <span class="fw-semibold text-success">{{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}</span>
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">ETH Balance</small><br>
+                <span class="fw-semibold text-info" id="ethBalance">{{ user_profile.eth_balance }} ETH</span>
+            </div>
+            <div>
+                <small class="text-muted">ADC Token Balance</small><br>
+                <span class="fw-semibold text-info" id="tokenBalance">{{ user_profile.token_balance }} ADC</span>
+            </div>
+        </div>
+
+    
+
+        <!-- 📊 Quick Stats -->
+        <div class="p-3 bg-dark text-white border border-success rounded shadow-sm">
+            <h6 class="text-success mb-3"><i class="bi bi-bar-chart-line me-2"></i>Quick Stats</h6>
+            <div class="d-flex justify-content-between">
+                <span>Total Videos:</span>
+                <strong>{{ videos.count }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Impressions:</span>
+                <strong id="totalImpressions">
+                    {% for video in videos %}{{ video.impressions }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}
+                </strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Earnings:</span>
+                <strong id="totalEarnings">
+                    {% for video in videos %}{{ video.earnings_eth }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %} ETH
+                </strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <h4 class="text-white mb-4"><i class="bi bi-collection-play me-2"></i> Videos</h4>
+
+        {% if videos %}
+            <div class="row">
+                {% for video in videos %}
+                <div class="col-md-6">
+                    <div class="bg-dark text-white border border-secondary rounded p-3 mb-4 shadow-sm">
+                        <h6 class="text-success">{{ video.title }}</h6>
+                        <p class="text-muted small mb-2"><i class="bi bi-calendar-event me-1"></i> Uploaded: {{ video.uploaded_at|date:"M d, Y" }}</p>
+
+                        <div class="mb-2">
+                            <small class="text-muted">Performance:</small>
+                            <div class="d-flex justify-content-between">
+                                <span>Impressions:</span>
+                                <strong class="text-info impressions-count" data-video-id="{{ video.id }}">{{ video.impressions }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Earnings (ETH):</span>
+                                <strong class="text-info earnings-eth" data-video-id="{{ video.id }}">{{ video.earnings_eth }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Earnings (ADC):</span>
+                                <strong class="text-info earnings-tokens" data-video-id="{{ video.id }}">{{ video.earnings_tokens }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="btn-group w-100">
+                            <a href="{{ video.video_file.url }}" class="btn btn-outline-light btn-sm" target="_blank">
+                                👁️ View
+                            </a>
+                            <button class="btn btn-success btn-sm simulate-view" data-video-id="{{ video.id }}">
+                                🎯 Simulate Ad View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <h5 class="text-white">No videos uploaded yet</h5>
+                <p class="text-muted">Upload your first video to start earning!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simulate ad view functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const simulateButtons = document.querySelectorAll('.simulate-view');
+        
+        simulateButtons.forEach(button => {
+            button.addEventListener('click', async function() {
+                const videoId = this.dataset.videoId;
+                const originalText = this.textContent;
+                
+                // Disable button and show loading
+                this.disabled = true;
+                this.textContent = '⏳ Processing...';
+                
+                try {
+                    const response = await fetch(`/simulate_ad_view/${videoId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Update video stats
+                        document.querySelector(`.impressions-count[data-video-id="${videoId}"]`).textContent = data.impressions;
+                        document.querySelector(`.earnings-eth[data-video-id="${videoId}"]`).textContent = data.earnings_eth;
+                        document.querySelector(`.earnings-tokens[data-video-id="${videoId}"]`).textContent = data.earnings_tokens;
+                        
+                        // Update user balance
+                        document.getElementById('ethBalance').textContent = data.publisher_eth_balance;
+                        document.getElementById('tokenBalance').textContent = data.publisher_token_balance;
+                        
+                        // Show success message
+                        showAlert('success', 'Ad view simulated! Earnings updated.');
+                    } else {
+                        showAlert('danger', 'Error simulating ad view.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showAlert('danger', 'Network error occurred.');
+                }
+                
+                // Re-enable button
+                this.disabled = false;
+                this.textContent = originalText;
+            });
+        });
+    });
+
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}  

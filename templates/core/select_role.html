@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Role - AdChain{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center my-5">
+    <div class="col-md-10">
+        <div class="card bg-dark text-white border border-success shadow-lg rounded-4">
+            <div class="card-header text-center border-bottom border-success">
+                <h3 class="text-success fw-bold">🚀 Choose Your Role</h3>
+                <p class="mb-0 text-light small">🔗 Wallet: {{ wallet_address|slice:":6" }}...{{ wallet_address|slice:"-4:" }}</p>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row g-4">
+                        <!-- Publisher -->
+                        <div class="col-md-6">
+                            <div class="card role-card bg-secondary bg-opacity-10 text-white border border-secondary h-100 p-3 rounded-4"
+                                 onclick="selectRole('publisher', this)" style="cursor: pointer;">
+                                <div class="card-body text-center">
+                                    <div class="icon mb-2" style="font-size: 3rem;"><svg xmlns="http://www.w3.org/2000/svg" width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-check-icon lucide-book-check"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/><path d="m9 9.5 2 2 4-4"/></svg></div>
+                                    <h5 class="fw-bold text-info">Publisher</h5>
+                                    <p class="text-light small">Upload videos and earn ADC tokens from ad views.</p>
+                                    <ul class="list-unstyled text-start small text-white-50">
+                                        <li>✅ Upload & manage videos</li>
+                                        <li>✅ Earn per impression</li>
+                                        <li>✅ Track earnings</li>
+                                        <li>✅ Withdraw ETH & tokens</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advertiser -->
+                        <div class="col-md-6">
+                            <div class="card role-card bg-secondary bg-opacity-10 text-white border border-secondary h-100 p-3 rounded-4"
+                                 onclick="selectRole('advertiser', this)" style="cursor: pointer;">
+                                <div class="card-body text-center">
+                                    <div class="icon mb-2" style="font-size: 3rem;"><svg xmlns="http://www.w3.org/2000/svg" width="58" height="58" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-megaphone-icon lucide-megaphone"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"/><path d="M8 6v8"/></svg></div>
+                                    <h5 class="fw-bold text-warning">Advertiser</h5>
+                                    <p class="text-light small">Create campaigns and promote your brand effectively.</p>
+                                    <ul class="list-unstyled text-start small text-white-50">
+                                        <li>✅ Launch ad campaigns</li>
+                                        <li>✅ Target by content type</li>
+                                        <li>✅ Monitor views & ROI</li>
+                                        <li>✅ Budget & spend control</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="role" id="selectedRole">
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success btn-lg px-5" id="confirmButton" disabled>
+                            ✅ Confirm Role
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    .role-card {
+        transition: 0.3s ease;
+        border: 2px solid transparent;
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .role-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0 25px rgba(128, 255, 0, 0.4);
+        border-color: #80ff00;
+    }
+
+    .role-card.selected {
+        border-color: #80ff00 !important;
+        background-color: rgba(128, 255, 0, 0.1) !important;
+    }
+
+    .icon {
+        filter: drop-shadow(0 0 6px rgba(0, 255, 170, 0.8));
+    }
+
+    .text-light {
+        color: #e0e0e0 !important;
+    }
+
+    .text-white-50 {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+</style>
+
+<!-- Script -->
+<script>
+    function selectRole(role, element) {
+        document.querySelectorAll('.role-card').forEach(card => card.classList.remove('selected'));
+        element.classList.add('selected');
+        document.getElementById('selectedRole').value = role;
+        document.getElementById('confirmButton').disabled = false;
+    }
+</script>
+{% endblock %}

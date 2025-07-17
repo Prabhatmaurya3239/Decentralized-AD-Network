@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+
+{% block title %}Advertiser Dashboard - AdChain{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-4">
+        <!-- Advertiser Info -->
+      <div class="wallet-info p-4 rounded border border-success shadow-sm" style="background-color: #111827; box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
+    <h5 class="fw-bold mb-3" style="color: #80ff00;">
+        <i class="bi bi-megaphone-fill me-2"></i>Advertiser Dashboard
+    </h5>
+
+    <div class="mb-3">
+        <small class="text-muted">Wallet Address</small>
+        <div class="fw-semibold" style="color: #80ff00; font-size: 0.95rem;">
+            {{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <small class="text-muted">ETH Balance</small>
+        <div class="fw-semibold" id="ethBalance" style="color: #00ffd5; font-size: 1.1rem;">
+            {{ user_profile.eth_balance }} ETH
+        </div>
+    </div>
+
+    <div>
+        <small class="text-muted">ADC Token Balance</small>
+        <div class="fw-semibold" id="tokenBalance" style="color: #00ffd5; font-size: 1.1rem;">
+            {{ user_profile.token_balance }} ADC
+        </div>
+    </div>
+</div>
+
+
+        <!-- Add ETH Balance -->
+        <div class="card bg-dark text-white border border-success mb-3 mt-4 shadow-sm">
+            <div class="card-header border-bottom border-success">
+                <h6 class="mb-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-plus-icon lucide-circle-plus"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>  Add ETH Balance</h6>
+            </div>
+            <div class="card-body">
+                <div class="input-group">
+                    <input type="number" class="form-control bg-dark text-white border-secondary" id="ethAmount" placeholder="0.1" step="0.01" min="0.01">
+                    <button class="btn btn-outline-success" id="addEthBtn">Add ETH</button>
+                </div>
+                <small class="text-muted">Demo function - adds ETH to your balance</small>
+            </div>
+        </div>
+            <!-- 📄 Upload Video -->
+        <div class="card bg-dark text-white border border-secondary mb-4">
+            <div class="card-header border-bottom border-success">
+                <h6 class="mb-0"><i class="bi bi-upload me-2"></i>Upload New Video</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="title" class="form-label text-success">Video Title</label>
+                        <input type="text" class="form-control bg-dark text-white border-success" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="video_file" class="form-label text-success">Video File</label>
+                        <input type="file" class="form-control bg-dark text-white border-success" id="video_file" name="video_file" accept="video/*" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline-success w-100">📄 Upload</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Campaign Stats -->
+        <div class="stats-card bg-dark text-white border border-success rounded p-3 shadow-sm">
+            <h6 class="text-success">📊 Campaign Stats</h6>
+            <div class="d-flex justify-content-between">
+                <span>Active Campaigns:</span>
+                <strong>{{ campaigns.count }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Spent:</span>
+                <strong>
+                    {% for campaign in campaigns %}{{ campaign.spent_eth }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %} ETH
+                </strong>
+            </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Views:</span>
+                <strong>
+                    {% for campaign in campaigns %}{{ campaign.views }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}
+                </strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <!-- Available Videos -->
+      <div class="mb-4">
+    <h4 class="fw-bold mb-4" style="color: #80ff00;">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6d6bf5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+        
+        Available Videos for Advertising</h4>
+
+    {% if videos %}
+        <div class="row g-4">
+            {% for video in videos %}
+            <div class="col-md-6">
+                <div class="bg-black text-white border border-success rounded p-4 shadow" style="box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
+                    <h5 class="fw-bold text-white mb-2">{{ video.title }}</h5>
+                    
+                    <p style="color: #ccc; font-size: 0.9rem;" class="mb-1">
+                        <i class="bi bi-person-circle me-1"></i>
+                        By: {{ video.publisher.wallet_address|slice:":6" }}...{{ video.publisher.wallet_address|slice:"-4:" }}
+                    </p>
+                    <p style="color: #ccc; font-size: 0.9rem;" class="mb-3">
+                        <i class="bi bi-calendar-event me-1"></i>
+                        Uploaded: {{ video.uploaded_at|date:"M d, Y" }}
+                    </p>
+
+                    <div class="p-2 rounded mb-3" style="background-color: rgba(128,255,0,0.05); border: 1px solid rgba(128,255,0,0.2);">
+                        <div class="d-flex justify-content-between small" style="color: #ccc;">
+                            <span><i class="bi bi-bar-chart-line-fill me-1"></i>Impressions:</span>
+                            <strong class="text-success">{{ video.impressions }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{{ video.video_file.url }}" target="_blank" class="btn btn-outline-light btn-sm w-50">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#41ec94" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-icon lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>
+                            Preview
+                        </a>
+                        <button class="btn btn-success btn-sm w-50 create-campaign"
+                            data-video-id="{{ video.id }}"
+                            data-video-title="{{ video.title }}">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-megaphone-icon lucide-megaphone"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14"/><path d="M8 6v8"/></svg> Advertise Here
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <h5 class="text-white">No videos available</h5>
+            <p style="color: #ccc;">Check back later for new content!</p>
+        </div>
+    {% endif %}
+</div>
+
+        <!-- Active Campaigns -->
+        <div>
+            <h4 class="text-white"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ecf00a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-monitor-dot-icon lucide-monitor-dot"><circle cx="19" cy="6" r="3"/><path d="M22 12v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/><path d="M12 17v4"/><path d="M8 21h8"/></svg>  Your Campaigns</h4>
+            {% if campaigns %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Video</th>
+                                <th>Budget</th>
+                                <th>Spent</th>
+                                <th>Views</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for campaign in campaigns %}
+                            <tr>
+                                <td>{{ campaign.video.title }}</td>
+                                <td>{{ campaign.budget_eth }} ETH</td>
+                                <td>{{ campaign.spent_eth }} ETH</td>
+                                <td>{{ campaign.views }}</td>
+                                <td>
+                                    {% if campaign.spent_eth < campaign.budget_eth %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Completed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-3">
+                    <p class="text-muted">No campaigns created yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Creation Modal -->
+<div class="modal fade" id="campaignModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border border-success">
+            <div class="modal-header">
+                <h5 class="modal-title">🎯 Create Campaign</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="campaignForm">
+                    <div class="mb-3">
+                        <label class="form-label">Selected Video:</label>
+                        <p id="selectedVideoTitle" class="fw-bold text-success"></p>
+                    </div>
+                    <div class="mb-3">
+                        <label for="campaignBudget" class="form-label">Campaign Budget (ETH)</label>
+                        <input type="number" class="form-control bg-dark text-white border border-secondary" id="campaignBudget" step="0.01" min="0.01" required>
+                        <small class="text-muted">Minimum: 0.01 ETH</small>
+                    </div>
+                    <input type="hidden" id="selectedVideoId">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" id="createCampaignBtn">Create Campaign</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add ETH functionality
+        document.getElementById('addEthBtn').addEventListener('click', async function() {
+            const amount = document.getElementById('ethAmount').value;
+            
+            if (!amount || amount <= 0) {
+                showAlert('warning', 'Please enter a valid amount.');
+                return;
+            }
+            
+            const originalText = this.textContent;
+            this.disabled = true;
+            this.textContent = 'Adding...';
+            
+            try {
+                const response = await fetch('/add_eth/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ amount: amount })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ethBalance').textContent = data.new_balance;
+                    document.getElementById('ethAmount').value = '';
+                    showAlert('success', `${amount} ETH added to your balance!`);
+                } else {
+                    showAlert('danger', data.error || 'Error adding ETH.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Network error occurred.');
+            }
+            
+            this.disabled = false;
+            this.textContent = originalText;
+        });
+
+        // Campaign creation functionality
+        const campaignButtons = document.querySelectorAll('.create-campaign');
+        const campaignModal = new bootstrap.Modal(document.getElementById('campaignModal'));
+        
+        campaignButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const videoId = this.dataset.videoId;
+                const videoTitle = this.dataset.videoTitle;
+                
+                document.getElementById('selectedVideoId').value = videoId;
+                document.getElementById('selectedVideoTitle').textContent = videoTitle;
+                
+                campaignModal.show();
+            });
+        });
+
+        // Create campaign
+        document.getElementById('createCampaignBtn').addEventListener('click', async function() {
+            const videoId = document.getElementById('selectedVideoId').value;
+            const budget = document.getElementById('campaignBudget').value;
+            
+            if (!budget || budget <= 0) {
+                showAlert('warning', 'Please enter a valid budget.');
+                return;
+            }
+            
+            const originalText = this.textContent;
+            this.disabled = true;
+            this.textContent = 'Creating...';
+            
+            try {
+                const response = await fetch('/create_campaign/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        video_id: videoId,
+                        budget: budget
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ethBalance').textContent = data.new_balance;
+                    campaignModal.hide();
+                    showAlert('success', 'Campaign created successfully!');
+                    
+                    // Reload page to show new campaign
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('danger', data.error || 'Error creating campaign.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('danger', 'Network error occurred.');
+            }
+            
+            this.disabled = false;
+            this.textContent = originalText;
+        });
+    });
+
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}
