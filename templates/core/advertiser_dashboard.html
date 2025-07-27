@@ -221,7 +221,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Add ETH functionality
-        document.getElementById('addEthBtn').addEventListener('click', async function() {
+        {% comment %} document.getElementById('addEthBtn').addEventListener('click', async function() {
             const amount = document.getElementById('ethAmount').value;
             
             if (!amount || amount <= 0) {
@@ -259,7 +259,7 @@
             
             this.disabled = false;
             this.textContent = originalText;
-        });
+        }); {% endcomment %}
 
         // Campaign creation functionality
         const campaignButtons = document.querySelectorAll('.create-campaign');
@@ -358,5 +358,163 @@
         }
         return cookieValue;
     }
+
+  
+    let contract;
+    
+
+    const contractAddress = "0xE5f2A565Ee0Aa9836B4c80a07C8b32aAd7978e22";
+    const abi =  [
+	{
+		"inputs": [],
+		"name": "deposit",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Deposited",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			}
+		],
+		"name": "Withdrawn",
+		"type": "event"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "balances",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMyBalance",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+] ;
+
+    async function connectMetaMask() {
+        if (window.ethereum) {
+            web3 = new Web3(window.ethereum);
+            const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+           userAccount = accounts[0];
+            contract = new web3.eth.Contract(abi, contractAddress);
+        } else {
+            alert("Install MetaMask to continue.");
+        }
+    }
+
+    async function addEthViaMetaMask() {
+        const ethValue = document.getElementById("ethAmount").value;
+        if (!ethValue || ethValue <= 0) {
+            alert("Enter a valid ETH amount.");
+            return;
+        }
+
+        const weiValue = web3.utils.toWei(ethValue, "ether");
+
+        try {
+            await contract.methods.deposit().send({
+                from: userAccount,
+                value: weiValue
+            });
+
+            alert(`${ethValue} ETH added successfully!`);
+
+             const response = await fetch('/add_eth/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ amount: ethValue })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ethBalance').textContent = data.new_balance;
+                    document.getElementById('ethAmount').value = '';
+                    showAlert('success', `${ethValue} ETH added to your balance!`);
+                } else {
+                    showAlert('danger', data.error || 'Error adding ETH.');
+                }
+        } catch (err) {
+            console.error(err);
+            alert("Transaction failed.");
+        }
+    }
+
+    document.getElementById("addEthBtn").addEventListener("click", addEthViaMetaMask);
+
+    // Connect wallet on page load
+    window.addEventListener("load", connectMetaMask);
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/web3@1.10.0/dist/web3.min.js"></script>
+
+
+
 {% endblock %}
