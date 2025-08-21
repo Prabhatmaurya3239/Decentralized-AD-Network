@@ -53,46 +53,55 @@
 <body>
     <!-- Navigation -->
   <!-- Navigation -->
+<!-- Navigation -->
 <nav class="navbar navbar-expand-lg" style="background-color: #1e1e1e;">
     <div class="container-fluid d-flex justify-content-between align-items-center px-4">
-       <a class="navbar-brand d-flex align-items-center p-2" href="{% url 'home' %}">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-        viewBox="0 0 24 24" fill="none" stroke="#80ff00" stroke-width="2" 
-        stroke-linecap="round" stroke-linejoin="round" 
-        class="lucide lucide-network me-2">
-        <rect x="16" y="16" width="6" height="6" rx="1"></rect>
-        <rect x="2" y="16" width="6" height="6" rx="1"></rect>
-        <rect x="9" y="2" width="6" height="6" rx="1"></rect>
-        <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path>
-        <path d="M12 12V8"></path>
-    </svg>
-    <span class="fw-bold text-white">AdChain</span>
-</a>
+        <a class="navbar-brand d-flex align-items-center p-2" href="{% url 'home' %}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                viewBox="0 0 24 24" fill="none" stroke="#80ff00" stroke-width="2" 
+                stroke-linecap="round" stroke-linejoin="round" 
+                class="lucide lucide-network me-2">
+                <rect x="16" y="16" width="6" height="6" rx="1"></rect>
+                <rect x="2" y="16" width="6" height="6" rx="1"></rect>
+                <rect x="9" y="2" width="6" height="6" rx="1"></rect>
+                <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path>
+                <path d="M12 12V8"></path>
+            </svg>
+            <span class="fw-bold text-white">AdChain</span>
+        </a>
 
         <div class="d-flex align-items-center">
+{% if wallet_address %}
+    <span class="text-success me-3 small">
+        {{ wallet_address|slice:":6" }}...{{ wallet_address|slice:"-4:" }}
+    </span>
+{% endif %}
+
+<button id="connectWallet" class="d-inline-flex align-items-center gap-2 btn border-0 px-3 py-2 text-success bg-transparent fw-bold rounded"
+    style="transition: 0.3s; font-size: 0.9rem;"
+    onmouseover="this.style.backgroundColor='rgba(128,255,0,0.1)'"
+    onmouseout="this.style.backgroundColor='transparent'">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+        viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+        class="lucide lucide-log-in">
+        <path d="m10 17 5-5-5-5"/>
+        <path d="M15 12H3"/>
+        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+    </svg>
+
     {% if wallet_address %}
-        <span class="text-success me-3 small">
-            {{ wallet_address|slice:":6" }}...{{ wallet_address|slice:"-4:" }}
-        </span>
+        Connected
+    {% else %}
+        Connect Wallet
     {% endif %}
+</button>
 
-    <button id="connectWallet" class="d-inline-flex align-items-center gap-2 btn border-0 px-3 py-2 text-success bg-transparent fw-bold rounded"
-        style="transition: 0.3s; font-size: 0.9rem;"
-        onmouseover="this.style.backgroundColor='rgba(128,255,0,0.1)'"
-        onmouseout="this.style.backgroundColor='transparent'">
-        
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-in-icon lucide-log-in"><path d="m10 17 5-5-5-5"/><path d="M15 12H3"/><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/></svg>
-
-        {% if wallet_address %}
-            Connected
-        {% else %}
-            Connect Wallet
-        {% endif %}
-    </button>
-</div>
-
+        </div>
     </div>
 </nav>
+
 
     <!-- Main Content -->
     <main class="container mt-4">
@@ -125,6 +134,7 @@
             }
             return false;
         }
+      
 
         // Connect to MetaMask
         async function connectWallet() {

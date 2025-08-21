@@ -1,18 +1,24 @@
+
 {% extends 'base.html' %}
 
 {% block title %}Publisher Dashboard - AdChain{% endblock %}
 
 {% block content %}
 <div class="row">
+    
+    <!-- 📍 Column 1: Publisher Info + Quick Stats -->
     <div class="col-lg-4">
         <!-- 🔐 Wallet Info -->
-        <div class="wallet-info p-4 rounded border border-success shadow-sm mb-4" style="background-color: #111827; box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
+        <div class="wallet-info p-4 rounded border border-success shadow-sm mb-4" 
+             style="background-color: #111827; box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
             <h5 class="fw-bold mb-3" style="color: #80ff00;">
                 <i class="bi bi-camera-video-fill me-2"></i>Publisher Dashboard
             </h5>
             <div class="mb-2">
                 <small class="text-muted">Wallet</small><br>
-                <span class="fw-semibold text-success">{{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}</span>
+                <span class="fw-semibold text-success">
+                    {{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}
+                </span>
             </div>
             <div class="mb-2">
                 <small class="text-muted">ETH Balance</small><br>
@@ -23,8 +29,6 @@
                 <span class="fw-semibold text-info" id="tokenBalance">{{ user_profile.token_balance }} ADC</span>
             </div>
         </div>
-
-    
 
         <!-- 📊 Quick Stats -->
         <div class="p-3 bg-dark text-white border border-success rounded shadow-sm">
@@ -48,7 +52,8 @@
         </div>
     </div>
 
-    <div class="col-lg-8">
+    <!-- 📍 Column 2: Videos -->
+    <div class="col-lg-6">
         <h4 class="text-white mb-4"><i class="bi bi-collection-play me-2"></i> Videos</h4>
 
         {% if videos %}
@@ -57,7 +62,9 @@
                 <div class="col-md-6">
                     <div class="bg-dark text-white border border-secondary rounded p-3 mb-4 shadow-sm">
                         <h6 class="text-success">{{ video.title }}</h6>
-                        <p class="text-muted small mb-2"><i class="bi bi-calendar-event me-1"></i> Uploaded: {{ video.uploaded_at|date:"M d, Y" }}</p>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar-event me-1"></i> Uploaded: {{ video.uploaded_at|date:"M d, Y" }}
+                        </p>
 
                         <div class="mb-2">
                             <small class="text-muted">Performance:</small>
@@ -94,9 +101,24 @@
             </div>
         {% endif %}
     </div>
-</div>
-{% endblock %}
 
+    <!-- 📍 Column 3: Action Buttons -->
+    <div class="col-lg-2">
+        <div class="d-grid gap-2 mb-4">
+            <a href="#" class="btn btn-outline-success w-100">
+                <i class="bi bi-key me-2"></i> API Key
+            </a>
+            <a href="#" class="btn btn-outline-info w-100">
+                <i class="bi bi-book me-2"></i> Documentation
+            </a>
+            <!-- 🔮 Future buttons can be added here -->
+          
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
 {% block extra_js %}
 <script>
     // Simulate ad view functionality
