@@ -23,7 +23,7 @@
                                     <h5 class="fw-bold text-info">Publisher</h5>
                                     <p class="text-light small">Upload videos and earn ADC tokens from ad views.</p>
                                     <ul class="list-unstyled text-start small text-white-50">
-                                        <li>✅ Upload & manage videos</li>
+                                        <li>✅ API Support</li>
                                         <li>✅ Earn per impression</li>
                                         <li>✅ Track earnings</li>
                                         <li>✅ Withdraw ETH & tokens</li>
@@ -45,24 +45,62 @@
                                         <li>✅ Target by content type</li>
                                         <li>✅ Monitor views & ROI</li>
                                         <li>✅ Budget & spend control</li>
+                                        <li>✅ Video & Image Upload</li>
+
                                     </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <input type="hidden" name="role" id="selectedRole">
+<div id="userFormContainer" class="mt-4 d-none">
+    <div class="card bg-dark border border-info rounded-4 shadow p-4">
+        <h5 class="text-info fw-bold text-center mb-3">📝 Complete Your Profile</h5>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="role" id="finalRole">
 
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-success btn-lg px-5" id="confirmButton" disabled>
-                            ✅ Confirm Role
-                        </button>
-                    </div>
+            <div class="mb-3">
+                <label class="form-label text-light">Full Name</label>
+                <input type="text" name="full_name" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-light">Email</label>
+                <input type="email" name="email" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-light">Username</label>
+                <input type="text" name="username" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-light">Password</label>
+                <input type="password" name="password" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label text-light">Confirm Password</label>
+                <input type="password" name="confirm_password" class="form-control bg-dark text-white border-secondary" required>
+            </div>
+
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg">🚀 Create Account</button>
+            </div>
+        </form>
+    </div>
+</div>
+
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+
+
+
 
 <!-- Styles -->
 <style>
@@ -101,8 +139,15 @@
     function selectRole(role, element) {
         document.querySelectorAll('.role-card').forEach(card => card.classList.remove('selected'));
         element.classList.add('selected');
-        document.getElementById('selectedRole').value = role;
-        document.getElementById('confirmButton').disabled = false;
+
+        document.getElementById('finalRole').value = role;
+
+        // Show form
+        document.getElementById('userFormContainer').classList.remove('d-none');
     }
 </script>
+
+
+
+
 {% endblock %}

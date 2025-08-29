@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+{% load widget_tweaks %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -53,9 +54,9 @@
 <body>
     <!-- Navigation -->
   <!-- Navigation -->
-<!-- Navigation -->
 <nav class="navbar navbar-expand-lg" style="background-color: #1e1e1e;">
     <div class="container-fluid d-flex justify-content-between align-items-center px-4">
+        <!-- Brand -->
         <a class="navbar-brand d-flex align-items-center p-2" href="{% url 'home' %}">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
                 viewBox="0 0 24 24" fill="none" stroke="#80ff00" stroke-width="2" 
@@ -70,37 +71,75 @@
             <span class="fw-bold text-white">AdChain</span>
         </a>
 
-        <div class="d-flex align-items-center">
-{% if wallet_address %}
-    <span class="text-success me-3 small">
-        {{ wallet_address|slice:":6" }}...{{ wallet_address|slice:"-4:" }}
-    </span>
-{% endif %}
+        <!-- Right side buttons -->
+        <div class="d-flex align-items-center gap-3">
+            
+            {% if wallet_address %}
+                <!-- Wallet Address -->
+                <span class="text-success small">
+                    {{ wallet_address|slice:":6" }}...{{ wallet_address|slice:"-4:" }}
+                </span>
 
-<button id="connectWallet" class="d-inline-flex align-items-center gap-2 btn border-0 px-3 py-2 text-success bg-transparent fw-bold rounded"
-    style="transition: 0.3s; font-size: 0.9rem;"
-    onmouseover="this.style.backgroundColor='rgba(128,255,0,0.1)'"
-    onmouseout="this.style.backgroundColor='transparent'">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-        viewBox="0 0 24 24" fill="none" stroke="currentColor" 
-        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
-        class="lucide lucide-log-in">
-        <path d="m10 17 5-5-5-5"/>
-        <path d="M15 12H3"/>
-        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-    </svg>
+                <!-- Publisher-only buttons -->
+                {% if user.is_authenticated and user.profile.role == "publisher" %}
+                   <a class="nav-link text-success" href="#" data-bs-toggle="modal" data-bs-target="#apiKeyModal">
+    <i class="bi bi-key me-1"></i> API Key
+</a>
+                    <a class="nav-link text-info" href="{% url 'docs' %}">
+                        <i class="bi bi-book me-1"></i> Documents
+                    </a>
+                {% endif %}
 
-    {% if wallet_address %}
-        Connected
-    {% else %}
-        Connect Wallet
-    {% endif %}
-</button>
+                <!-- Logout -->
+                <form action="{% url 'logout' %}" method="POST" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm fw-bold rounded">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            {% endif %}
 
+            <!-- Connect Wallet Button -->
+            <button id="connectWallet" class="btn border-0 px-3 py-2 fw-bold rounded
+                {% if wallet_address %}text-muted{% else %}text-success{% endif %}" 
+                style="transition: 0.3s; font-size: 0.9rem; background: transparent;"
+                {% if wallet_address %}disabled{% endif %}
+                onmouseover="this.style.backgroundColor='rgba(128,255,0,0.1)'"
+                onmouseout="this.style.backgroundColor='transparent'">
+                
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
+                    viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" 
+                    class="lucide lucide-log-in">
+                    <path d="m10 17 5-5-5-5"/>
+                    <path d="M15 12H3"/>
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                </svg>
+
+                {% if wallet_address %}
+                    Connected
+                {% else %}
+                    Connect Wallet
+                {% endif %}
+            </button>
         </div>
     </div>
 </nav>
+
+<div class="modal fade" id="apiKeyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark text-white rounded-3">
+      <div class="modal-header">
+        <h5 class="modal-title">Manage API Keys</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="apiKeysList"></div>
+        <button id="newApiKeyBtn" class="btn btn-success mt-3">+ Generate New API Key</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
     <!-- Main Content -->
@@ -211,6 +250,79 @@
             });
         }
     </script>
+
+<script>
+function loadApiKeys() {
+    fetch("/api_keys/")
+    .then(res => res.json())
+    .then(data => {
+        const container = document.getElementById("apiKeysList");
+        container.innerHTML = "";
+        if (data.keys.length === 0) {
+            container.innerHTML = "<p class='text-muted'>No API keys found.</p>";
+        } else {
+            data.keys.forEach(key => {
+                container.innerHTML += `
+                  <div class="d-flex justify-content-between align-items-center bg-secondary p-2 rounded mb-2">
+                      <span class="text-monospace">${key}</span>
+                      <div>
+                          <button class="btn btn-sm btn-outline-light" onclick="copyKey('${key}')">Copy</button>
+                          <button class="btn btn-sm btn-outline-danger" onclick="deleteKey('${key}')">Delete</button>
+                      </div>
+                  </div>`;
+            });
+        }
+    });
+}
+
+function copyKey(key) {
+    navigator.clipboard.writeText(key);
+    alert("Copied!");
+}
+
+function deleteKey(key) {
+    fetch("/delete_api_key/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: "key=" + key
+    }).then(res => res.json()).then(data => {
+        if (data.success) loadApiKeys();
+    });
+}
+
+document.getElementById("newApiKeyBtn").addEventListener("click", () => {
+    fetch("/create_api_key/", {
+        method: "POST",
+        headers: {"X-CSRFToken": getCookie("csrftoken")}
+    }).then(res => res.json()).then(data => {
+        if (data.success) loadApiKeys();
+    });
+});
+
+// Load keys when modal opens
+document.getElementById("apiKeyModal").addEventListener("shown.bs.modal", loadApiKeys);
+
+// CSRF Helper
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+
 
     {% block extra_js %}
     {% endblock %}

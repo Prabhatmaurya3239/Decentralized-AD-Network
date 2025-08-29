@@ -10,4 +10,12 @@ urlpatterns = [
     path('simulate_ad_view/<int:video_id>/', views.simulate_ad_view, name='simulate_ad_view'),
     path('add_eth/', views.add_eth, name='add_eth'),
     path('create_campaign/', views.create_campaign, name='create_campaign'),
+    path("logout/", views.logout_view, name="logout"),
+    path("login/", views.custom_login, name="custom_login"),
+    path("api_keys/", views.api_keys_view, name="api_keys"),
+    path("create_api_key/", views.create_api_key, name="create_api_key"),
+    path("delete_api_key/", views.delete_api_key, name="delete_api_key"),
+    path("docs/", views.documentation, name="docs"),
+
+    
 ]

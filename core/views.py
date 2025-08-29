@@ -5,7 +5,71 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from decimal import Decimal
 import json
-from .models import UserProfile, Video, Campaign
+from django.contrib.auth import logout, login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from .models import UserProfile, Video, Campaign, APIKey
+from .forms import CustomLoginForm
+
+def custom_login(request):
+    if request.method == "POST":
+        form = CustomLoginForm(request.POST)
+        if form.is_valid():
+            username_or_email = form.cleaned_data["username_or_email"]
+            wallet_address = form.cleaned_data["wallet_address"]
+            password = form.cleaned_data["password"]
+
+            print(f"Received - Username/Email: {username_or_email}, Wallet: {wallet_address}")
+
+            # ✅ User ko username ya email se dhundo
+            try:
+                user = User.objects.get(username=username_or_email)
+            except User.DoesNotExist:
+                try:
+                    user = User.objects.get(email=username_or_email)
+                except User.DoesNotExist:
+                    user = None
+
+            print(f"User found: {user}")
+
+            if user:
+                # ✅ Password verify karo
+                auth_user = authenticate(request, username=user.username, password=password)
+                if auth_user:
+                    try:
+                        profile = UserProfile.objects.get(user=user)
+                        if profile.wallet_address == wallet_address:
+                            login(request, auth_user)
+                            request.session["wallet_address"] = wallet_address
+
+                            # ✅ Role ke hisaab se redirect
+                            if profile.role == "publisher":
+                                return redirect("publisher_dashboard")
+                            elif profile.role == "advertiser":
+                                return redirect("advertiser_dashboard")
+                            else:
+                                return redirect("home")
+                        else:
+                            messages.error(request, "⚠️ Wallet address does not match!")
+                    except UserProfile.DoesNotExist:
+                        messages.error(request, "⚠️ No profile linked with this account.")
+                else:
+                    messages.error(request, "⚠️ Invalid password!")
+            else:
+                messages.error(request, "⚠️ Invalid username or email!")
+    else:
+        form = CustomLoginForm()
+
+    return render(request, "core/custom_login.html", {"form": form})
+
+
+
+def logout_view(request):
+    logout(request)  # Django user session clear karega
+    if "wallet_address" in request.session:
+        del request.session["wallet_address"]  # wallet session bhi clear
+    return redirect('home')
+
 
 def home(request):
     wallet_address = request.session.get('wallet_address')
@@ -20,6 +84,7 @@ def home(request):
     context = {
         'user_profile': user_profile,
         'wallet_address': wallet_address,
+        
     }
     return render(request, 'core/home.html', context)
 
@@ -53,19 +118,54 @@ def select_role(request):
     wallet_address = request.session.get('wallet_address')
     if not wallet_address:
         return redirect('home')
-    
-    if request.method == 'POST':
-        role = request.POST.get('role')
-        if role in ['publisher', 'advertiser']:
-            user_profile = UserProfile.objects.create(
-                wallet_address=wallet_address,
-                role=role
-            )
-            messages.success(request, f'Welcome! You are now registered as a {role}.')
-            return redirect(f'{role}_dashboard')
-    
-    return render(request, 'core/select_role.html', {'wallet_address': wallet_address})
 
+    if request.method == "POST":
+        role = request.POST.get("role")
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        # Password check
+        if password != confirm_password:
+            messages.error(request, "⚠️ Passwords do not match!")
+            return redirect("select_role")
+
+        # Duplicate username check
+        if User.objects.filter(username=username).exists():
+            messages.error(request, "⚠️ Username already exists!")
+            return redirect("select_role")
+
+        # Duplicate wallet check
+        if UserProfile.objects.filter(wallet_address=wallet_address).exists():
+            messages.warning(request, "⚠️ Wallet already registered!")
+            return redirect("home")
+
+        # Create user
+        user = User.objects.create_user(
+            username=username,
+            password=password,
+            email=email,
+            first_name=full_name
+        )
+        user.save()
+
+        # Create profile
+        UserProfile.objects.create(
+            user=user,
+            wallet_address=wallet_address,
+            role=role
+        )
+
+        # Auto-login
+        login(request, user)
+
+        messages.success(request, f"🎉 Welcome {full_name}, registered as {role.capitalize()}!")
+        return redirect(f"{role}_dashboard")
+
+    return render(request, "core/select_role.html", {"wallet_address": wallet_address})
+@login_required
 def publisher_dashboard(request):
     wallet_address = request.session.get('wallet_address')
     if not wallet_address:
@@ -108,7 +208,8 @@ def simulate_ad_view(request, video_id):
         'publisher_eth_balance': str(video.publisher.eth_balance),
         'publisher_token_balance': str(video.publisher.token_balance),
     })
-
+    
+@login_required
 def advertiser_dashboard(request):
     wallet_address = request.session.get('wallet_address')
     if not wallet_address:
@@ -198,3 +299,26 @@ def create_campaign(request):
             
     except (UserProfile.DoesNotExist, Video.DoesNotExist):
         return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def api_keys_view(request):
+    keys = APIKey.objects.filter(user=request.user)
+    return JsonResponse({"keys": [k.key for k in keys]})
+
+@login_required
+def create_api_key(request):
+    if request.method == "POST":
+        key = APIKey.objects.create(user=request.user)
+        return JsonResponse({"success": True, "key": key.key})
+    return JsonResponse({"success": False})
+
+@login_required
+def delete_api_key(request):
+    if request.method == "POST":
+        key_value = request.POST.get("key")
+        APIKey.objects.filter(user=request.user, key=key_value).delete()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False})
+
+def documentation(request):
+    return render(request, "core/documentation.html")
