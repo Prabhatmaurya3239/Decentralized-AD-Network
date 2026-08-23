@@ -1,134 +1,162 @@
 {% extends "base.html" %}
+{% block title %}Developer SDK Documentation - AdChain{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-4">
-  <div class="row">
-    
-    <!-- Sidebar -->
-    <div class="col-md-3 col-lg-2 bg-dark text-white p-3 rounded-3 sticky-top" style="height: 90vh; overflow-y: auto;">
-      <h5 class="mb-3">📚 Docs</h5>
-      <ul class="nav flex-column">
-        <li class="nav-item"><a href="#intro" class="nav-link text-white">Introduction</a></li>
-        <li class="nav-item"><a href="#installation" class="nav-link text-white">Installation</a></li>
-        <li class="nav-item"><a href="#auth" class="nav-link text-white">Authentication</a></li>
-        <li class="nav-item"><a href="#integration" class="nav-link text-white">Integration</a></li>
-        <li class="nav-item"><a href="#customization" class="nav-link text-white">Customization</a></li>
-        <li class="nav-item"><a href="#reporting" class="nav-link text-white">Reporting</a></li>
-        <li class="nav-item"><a href="#faq" class="nav-link text-white">FAQ</a></li>
-      </ul>
+<div class="row g-4 position-relative py-4" style="z-index: 5;">
+    <!-- Sticky Docs Sidebar -->
+    <div class="col-md-3 col-lg-2 sticky-top" style="top: 90px; height: calc(100vh - 120px); overflow-y: auto;">
+        <div class="glass-card p-3 h-100">
+            <h6 class="text-white fw-bold mb-3 px-2"><i class="bi bi-book-half text-primary me-2"></i>SDK Docs</h6>
+            <ul class="nav flex-column gap-1 small font-body">
+                <li class="nav-item">
+                    <a href="#intro" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-info-circle me-2"></i>Introduction</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#installation" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-download me-2"></i>Installation</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#auth" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-key-fill me-2"></i>Authentication</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#integration" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-code-slash me-2"></i>Integration</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#customization" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-sliders me-2"></i>Customization</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#reporting" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-bar-chart-fill me-2"></i>Reporting</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#faq" class="nav-link text-light px-2 py-1.5 rounded-3 hover:text-white" style="transition: var(--transition-smooth);"><i class="bi bi-question-circle me-2"></i>FAQ</a>
+                </li>
+            </ul>
+        </div>
     </div>
 
     <!-- Main Content -->
     <div class="col-md-9 col-lg-10">
-      <h2 class="fw-bold">Publisher SDK Documentation</h2>
-      <p class="text-muted">Integrate our Ads into your website and start monetizing in minutes 🚀</p>
-      <hr>
+        <div class="glass-card p-5" style="background: rgba(14, 14, 19, 0.75);">
+            <div class="mb-4">
+                <h2 class="fw-extrabold text-white mb-2" style="letter-spacing: -0.03em;">Publisher SDK Documentation</h2>
+                <p class="text-light fs-6">Integrate our decentralized ads into your content channels and start earning in minutes 🚀</p>
+                <hr class="border-secondary border-opacity-20 my-4">
+            </div>
 
-      <!-- Introduction -->
-      <section id="intro" class="mb-5">
-        <h4>👋 Introduction</h4>
-        <p>
-          Welcome to our <b>Publisher SDK</b>.  
-          Using this SDK, you can easily integrate <b>ads on your website</b> and earn revenue.  
-          The SDK is lightweight, customizable, and works seamlessly across devices.
-        </p>
-      </section>
+            <!-- Introduction -->
+            <section id="intro" class="mb-5">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center text-primary bg-primary bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-info-circle"></i></span>
+                    Introduction
+                </h5>
+                <p class="text-light font-body leading-relaxed">
+                    Welcome to the <b>AdChain Publisher SDK</b>.  
+                    Using this client library, you can easily host targeted video ads on your websites, verify user view times, and accrue dynamic token rewards settled on the blockchain ledger. The SDK is lightweight, responsive, and cross-browser compliant.
+                </p>
+            </section>
 
-      <!-- Installation -->
-      <section id="installation" class="mb-5">
-        <h4>📦 Installation</h4>
-        <p>Add our script to your website's <code>&lt;head&gt;</code>:</p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-&lt;script src="https://cdn.myad.com/sdk.js"&gt;&lt;/script&gt;
-</code>
-</pre>
-      </section>
+            <!-- Installation -->
+            <section id="installation" class="mb-5">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center text-info bg-info bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-download"></i></span>
+                    Installation
+                </h5>
+                <p class="text-light">Insert our core analytics client script tag inside your HTML pages <code>&lt;head&gt;</code> block:</p>
+                <div class="bg-dark bg-opacity-50 p-3 rounded-4 border border-secondary border-opacity-10 mb-2 position-relative">
+                    <code class="text-info font-monospace" style="font-size: 0.85rem;">&lt;script src="https://cdn.adchain.net/sdk/v1/sdk.min.js"&gt;&lt;/script&gt;</code>
+                </div>
+            </section>
 
-      <!-- Authentication -->
-      <section id="auth" class="mb-5">
-        <h4>🔑 Authentication</h4>
-        <p>
-          Every publisher gets a unique <b>API Key</b> from their dashboard.  
-          Use this key to authenticate and load ads on your site.
-        </p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-&lt;script&gt;
-   window.myAdConfig = {
-       apiKey: "YOUR_API_KEY",
-       publisherId: "PUB123456"
+            <!-- Authentication -->
+            <section id="auth" class="mb-5">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center  bg-warning bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-key-fill"></i></span>
+                    Authentication
+                </h5>
+                <p class="text-light">Generate a unique API key from the active publisher dashboard. Link this token inside your configuration object on load:</p>
+                <div class="bg-dark bg-opacity-50 p-4 rounded-4 border border-secondary border-opacity-10 mb-2">
+                    <pre class="mb-0"><code class="text-info font-monospace" style="font-size: 0.85rem;">&lt;script&gt;
+   window.AdChainConfig = {
+       apiKey: "YOUR_PUBLISHER_API_KEY",
+       publisherWallet: "{{ wallet_address|default:'0x000...000' }}"
    };
-&lt;/script&gt;
-</code>
-</pre>
-      </section>
+&lt;/script&gt;</code></pre>
+                </div>
+            </section>
 
-      <!-- Integration -->
-      <section id="integration" class="mb-5">
-        <h4>⚡ Integration</h4>
-        <p>Place ad slots anywhere in your HTML:</p>
+            <!-- Integration -->
+            <section id="integration" class="mb-5">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center text-primary bg-primary bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-code-slash"></i></span>
+                    HTML Placement
+                </h5>
+                <p class="text-light">Embed ad banner containers anywhere inside your HTML structure. The library auto-resolves active frames on load:</p>
+                <div class="bg-dark bg-opacity-50 p-3 rounded-4 border border-secondary border-opacity-10 mb-3">
+                    <code class="text-info font-monospace" style="font-size: 0.85rem;">&lt;div class="adchain-slot" data-ad-size="300x250" data-ad-id="campaign-header"&gt;&lt;/div&gt;</code>
+                </div>
+            </section>
 
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-&lt;div class="ad-slot" data-ad-size="300x250" data-ad-id="banner1"&gt;&lt;/div&gt;
-</code>
-</pre>
+            <!-- Customization -->
+            <section id="customization" class="mb-5">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center  bg-success bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-sliders"></i></span>
+                    Customization
+                </h5>
+                <p class="text-light">Customize layout behaviors using dataset elements:</p>
+                <div class="table-responsive">
+                    <table class="table table-dark table-borderless align-middle mb-0 small">
+                        <thead>
+                            <tr class="text-light border-bottom border-secondary border-opacity-10">
+                                <th class="py-2.5">Attribute</th>
+                                <th class="py-2.5">Supported Values</th>
+                                <th class="py-2.5">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                                <td class="font-monospace text-primary py-3">data-ad-size</td>
+                                <td>300x250, 728x90, 160x600</td>
+                                <td>Dimensions constraint values.</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                                <td class="font-monospace text-primary py-3">data-ad-theme</td>
+                                <td>light, dark</td>
+                                <td>Visual container colors matching target site theme.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-        <p>The SDK automatically detects <code>.ad-slot</code> elements and fills them with ads.</p>
+            <!-- Reporting -->
+            <section id="reporting" class="mb-5">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center text-info bg-info bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-bar-chart-fill"></i></span>
+                    Query Statistics
+                </h5>
+                <p class="text-light">Query live performance logs programmatically using curl headers:</p>
+                <div class="bg-dark bg-opacity-50 p-3 rounded-4 border border-secondary border-opacity-10 mb-3">
+                    <code class="text-info font-monospace" style="font-size: 0.85rem;">curl -H "Authorization: Bearer YOUR_API_KEY" https://adchain.net/api/v1/stats</code>
+                </div>
+            </section>
 
-        <h6>Example Output:</h6>
-        <div class="border rounded p-3 bg-light text-center">
-          <span class="text-muted">[Ad Banner 300x250]</span>
+            <!-- FAQ -->
+            <section id="faq" class="mb-0">
+                <h5 class="text-white fw-bold mb-3 d-flex align-items-center gap-2">
+                    <span class="d-inline-flex align-items-center justify-content-center text-danger bg-danger bg-opacity-10 rounded-3" style="width: 32px; height: 32px;"><i class="bi bi-question-circle"></i></span>
+                    FAQ
+                </h5>
+                <div class="d-flex flex-column gap-3">
+                    <div>
+                        <h6 class="text-white fw-bold mb-1">How quickly do earnings reflect?</h6>
+                        <p class="text-light small mb-0">Balance aggregates update instantly once the AI verification oracle confirms view compliance logs.</p>
+                    </div>
+                    <div>
+                        <h6 class="text-white fw-bold mb-1">Can I link multiple sites under one API Key?</h6>
+                        <p class="text-light small mb-0">Yes, you can register and authorize multiple target domain endpoints inside dashboard parameters.</p>
+                    </div>
+                </div>
+            </section>
         </div>
-      </section>
-
-      <!-- Customization -->
-      <section id="customization" class="mb-5">
-        <h4>🎨 Customization</h4>
-        <p>You can control ad behavior using <code>data-*</code> attributes:</p>
-        <table class="table table-bordered table-striped">
-          <thead class="table-dark">
-            <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>data-ad-size</td><td>300x250, 728x90, 160x600</td><td>Set ad dimensions</td></tr>
-            <tr><td>data-ad-theme</td><td>light / dark</td><td>Choose ad theme</td></tr>
-            <tr><td>data-ad-id</td><td>unique name</td><td>Unique slot identifier</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- Reporting -->
-      <section id="reporting" class="mb-5">
-        <h4>📊 Reporting</h4>
-        <p>Fetch real-time ad stats using API:</p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-https://api.myad.com/v1/stats
-</code>
-</pre>
-        <p>Example response:</p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-{
-   "impressions": 12345,
-   "clicks": 678,
-   "revenue": 45.67
-}
-</code>
-</pre>
-      </section>
-
-      <!-- FAQ -->
-      <section id="faq" class="mb-5">
-        <h4>❓ FAQ</h4>
-        <p><b>Q: How long does it take to start showing ads?</b></p>
-        <p>A: Ads usually start appearing within minutes after integration.</p>
-        <p><b>Q: Can I use multiple ad slots?</b></p>
-        <p>A: Yes, just add multiple <code>div.ad-slot</code> elements.</p>
-      </section>
     </div>
-  </div>
 </div>
 {% endblock %}
