@@ -85,7 +85,3 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_URL = '/login/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-ADCHAIN_CONTRACT_ADDRESS = os.getenv('ADCHAIN_CONTRACT_ADDRESS', '')
-ADCHAIN_RPC_URL = os.getenv('ADCHAIN_RPC_URL', 'http://127.0.0.1:8545')
-ADCHAIN_ABI = []

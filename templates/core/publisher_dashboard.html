@@ -1,511 +1,125 @@
+
 {% extends 'base.html' %}
-{% load static %}
 
 {% block title %}Publisher Dashboard - AdChain{% endblock %}
 
-{% block layout %}
-<div class="dashboard-container">
-    <!-- Sidebar navigation -->
-    <aside class="sidebar" id="dashboardSidebar">
-        <!-- Logo -->
-        <div class="sidebar-header d-flex align-items-center gap-2 mb-4 px-3">
-            <div class="d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); width: 32px; height: 32px; border-radius: 8px;">
-                <i class="bi bi-cpu text-white" style="font-size: 1rem;"></i>
+{% block content %}
+<div class="row">
+    <!-- 📍 Column 1: Publisher Info + Quick Stats -->
+    <div class="col-lg-4">
+        <!-- 🔐 Wallet Info -->
+        <div class="wallet-info p-4 rounded border border-success shadow-sm mb-4" 
+             style="background-color: #111827; box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
+            <h5 class="fw-bold mb-3" style="color: #80ff00;">
+                <i class="bi bi-camera-video-fill me-2"></i>Publisher Dashboard
+            </h5>
+            <div class="mb-2">
+                <small class="text-muted">Wallet</small><br>
+                <span class="fw-semibold text-success">
+                    {{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}
+                </span>
             </div>
-            <span class="fw-bold text-white fs-5 sidebar-text" style="letter-spacing: -0.03em;">AdChain</span>
-        </div>
-
-        <!-- Links -->
-        <div class="sidebar-content">
-            <a href="#" class="nav-link active" data-bs-toggle="tab-custom" data-bs-target="#overview-section">
-                <i class="bi bi-grid-fill me-2.5"></i>
-                <span class="sidebar-text">Overview</span>
-            </a>
-            <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#inventory-section">
-                <i class="bi bi-collection-play-fill me-2.5"></i>
-                <span class="sidebar-text">Ad Inventory</span>
-            </a>
-            <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#analytics-section">
-                <i class="bi bi-bar-chart-line-fill me-2.5"></i>
-                <span class="sidebar-text">Analytics</span>
-            </a>
-            <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#pricing-section">
-                <i class="bi bi-activity me-2.5"></i>
-                <span class="sidebar-text">Dynamic Pricing</span>
-            </a>
-            <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#fraud-section">
-                <i class="bi bi-shield-check me-2.5"></i>
-                <span class="sidebar-text">Fraud Detection</span>
-            </a>
-            <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#wallet-section">
-                <i class="bi bi-wallet2 me-2.5"></i>
-                <span class="sidebar-text">Wallet UI</span>
-            </a>
-            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#apiKeyModal">
-                <i class="bi bi-key-fill me-2.5"></i>
-                <span class="sidebar-text">API Keys</span>
-            </a>
-            <a class="nav-link" href="{% url 'docs' %}">
-                <i class="bi bi-book-fill me-2.5"></i>
-                <span class="sidebar-text">Developer Docs</span>
-            </a>
-        </div>
-
-        <!-- Footer / Profile -->
-        <div class="mt-auto border-top border-secondary border-opacity-10 pt-3 px-2">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <div class="d-flex align-items-center gap-2">
-                    <div class="bg-primary bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center text-primary" style="width: 32px; height: 32px; font-weight: 700; font-size: 0.85rem;">
-                        P
-                    </div>
-                    <div class="sidebar-text">
-                        <div class="fw-bold text-white small" style="font-size: 0.8rem;">Publisher</div>
-                        <small class="text-light" style="font-size: 0.7rem;">Active Session</small>
-                    </div>
-                </div>
-                <form action="{% url 'logout' %}" method="POST" class="d-inline sidebar-text">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-box-arrow-right"></i></button>
-                </form>
+            <div class="mb-2">
+                <small class="text-muted">ETH Balance</small><br>
+                <span class="fw-semibold text-info" id="ethBalance">{{ user_profile.eth_balance }} ETH</span>
             </div>
-        </div>
-    </aside>
-
-    <!-- Mobile Bottom Navigation -->
-    <div class="mobile-bottom-nav">
-        <a href="#" class="nav-link active" data-bs-toggle="tab-custom" data-bs-target="#overview-section">
-            <i class="bi bi-grid-fill"></i>
-            <span>Overview</span>
-        </a>
-        <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#inventory-section">
-            <i class="bi bi-collection-play-fill"></i>
-            <span>Ads</span>
-        </a>
-        <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#pricing-section">
-            <i class="bi bi-activity"></i>
-            <span>Market</span>
-        </a>
-        <a href="#" class="nav-link" data-bs-toggle="tab-custom" data-bs-target="#wallet-section">
-            <i class="bi bi-wallet2"></i>
-            <span>Wallet</span>
-        </a>
-    </div>
-
-    <!-- Main Panel -->
-    <div class="main-content-layout">
-        <!-- Top Toolbar -->
-        <div class="top-dashboard-nav flex-wrap gap-3">
             <div>
-                <h4 class="text-white fw-bold mb-1">Publisher Dashboard</h4>
-                <p class="text-light small mb-0">Track visual assets performance, smart contract transactions, and oracle status.</p>
-            </div>
-            
-            <div class="d-flex align-items-center gap-2 bg-dark bg-opacity-40 border border-secondary border-opacity-10 px-3 py-2 rounded-4">
-                <div class="badge-dot" style="background-color: var(--success);"></div>
-                <span class="text-light small">Connected as Publisher:</span>
-                <span class="text-white small fw-bold font-monospace" id="publisherWalletVal">{{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}</span>
-                <button type="button" class="btn btn-sm btn-secondary-outline py-1 px-2" data-connect-role="publisher" title="Connect Publisher MetaMask wallet"><i class="bi bi-plug me-1"></i>Connect</button>
-                <button class="btn btn-sm btn-outline-light border-0 btn-copy-address" data-address="{{ user_profile.wallet_address }}"><i class="bi bi-clipboard" style="font-size: 0.85rem;"></i></button>
+                <small class="text-muted">ADC Token Balance</small><br>
+                <span class="fw-semibold text-info" id="tokenBalance">{{ user_profile.token_balance }} ADC</span>
             </div>
         </div>
 
-        <!-- ================= OVERVIEW TAB ================= -->
-        <div class="tab-pane-custom active" id="overview-section">
-            <!-- Quick Stats Row -->
-            <div class="row g-4 mb-4">
-                <div class="col-md-6 col-lg-3">
-                    <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="text-light small fw-semibold">Total Earnings</span>
-                            <div class="p-2 rounded bg-primary bg-opacity-10 border border-primary border-opacity-10"><i class="bi bi-currency-exchange text-primary"></i></div>
-                        </div>
-                        <h3 class="text-white fw-extrabold mb-1" id="ethBalanceOverview">{{ user_profile.eth_balance|floatformat:4 }} ETH</h3>
-                        <div class=" small"><i class="bi bi-coin me-1"></i><span id="tokenBalanceOverview">{{ user_profile.token_balance }}</span> ADC</div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="text-light small fw-semibold">Today's Earnings</span>
-                            <div class="p-2 rounded bg-success bg-opacity-10 border border-success border-opacity-10"><i class="bi bi-lightning-fill "></i></div>
-                        </div>
-                        <h3 class="text-white fw-extrabold mb-1">0.0200 ETH</h3>
-                        <div class=" small"><i class="bi bi-caret-up-fill me-0.5"></i>+200 ADC</div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="text-light small fw-semibold">Total Impressions</span>
-                            <div class="p-2 rounded bg-info bg-opacity-10 border border-info border-opacity-10"><i class="bi bi-eye-fill text-info"></i></div>
-                        </div>
-                        <h3 class="text-white fw-extrabold mb-1" id="totalImpressionsVal">0</h3>
-                        <div class="text-light small">Ad placements served</div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 col-lg-3">
-                    <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <span class="text-light small fw-semibold">Engagement Rate</span>
-                            <div class="p-2 rounded bg-warning bg-opacity-10 border border-warning border-opacity-10"><i class="bi bi-percent "></i></div>
-                        </div>
-                        <h3 class="text-white fw-extrabold mb-1">74.2%</h3>
-                        <div class=" small"><i class="bi bi-arrow-up-right"></i> +3.1% this week</div>
-                    </div>
-                </div>
+        <!-- 📊 Quick Stats -->
+        <div class="p-3 bg-dark text-white border border-success rounded shadow-sm">
+            <h6 class="text-success mb-3"><i class="bi bi-bar-chart-line me-2"></i>Quick Stats</h6>
+            <div class="d-flex justify-content-between">
+                <span>Total Videos:</span>
+                <strong>{{ videos.count }}</strong>
             </div>
-
-            <div class="glass-card p-4 mb-4 border-success border-opacity-25" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.10), rgba(14, 14, 19, 0.88));">
-                <div class="row align-items-center g-4">
-                    <div class="col-lg-5">
-                        <span class="network-badge mb-3"><span class="network-badge-dot"></span>Sepolia Testnet / DEMO</span>
-                        <h5 class="text-white fw-bold mb-1">Available to Withdraw</h5>
-                        <h2 class="text-white fw-extrabold mb-2" id="publisherAvailableVal">0.00482 ETH</h2>
-                        <p class="text-light small mb-0">Publisher earnings are credited to this publisher wallet context only.</p>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="small text-light mb-1">Publisher wallet</div>
-                        <div class="font-monospace text-white fw-bold" id="publisherWalletAddressFull">{{ user_profile.wallet_address }}</div>
-                        <div class="small text-light mt-2">Withdrawal destination: connected Publisher MetaMask</div>
-                    </div>
-                    <div class="col-lg-3 text-lg-end">
-                        <button type="button" class="btn btn-primary-glow w-100" id="withdrawToMetaMaskBtn">
-                            <i class="bi bi-wallet2 me-2"></i>WITHDRAW TO METAMASK
-                        </button>
-                        <div class="text-light small mt-2">Demo settlement until contract address is configured</div>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Impressions:</span>
+                <strong id="totalImpressions">
+                    {% for video in videos %}{{ video.impressions }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}
+                </strong>
             </div>
-
-            <!-- Revenue Performance Area Chart & Live Ticker -->
-            <div class="row g-4">
-                <div class="col-lg-8">
-                    <div class="glass-card p-4">
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="text-white fw-bold mb-0">Revenue Performance</h5>
-                            <div class="btn-group btn-group-sm bg-dark p-1 rounded-3" style="border: 1px solid rgba(255,255,255,0.05);">
-                                <button class="btn btn-sm btn-dark text-light active py-1.5 px-2.5 rounded-2">7D</button>
-                                <button class="btn btn-sm btn-dark text-light py-1.5 px-2.5 rounded-2">30D</button>
-                                <button class="btn btn-sm btn-dark text-light py-1.5 px-2.5 rounded-2">90D</button>
-                            </div>
-                        </div>
-                        <div style="position: relative; height: 280px;">
-                            <canvas id="publisherRevenueChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="glass-card p-4 h-100">
-                        <h5 class="text-white fw-bold mb-3"><i class="bi bi-activity text-primary me-2"></i>Live Impression Feed <span class="badge bg-warning bg-opacity-0  border border-warning border-opacity-20 ms-2">DEMO / SIMULATED</span></h5>
-                        <div class="activity-feed" id="liveActivityFeed">
-                            <div class="activity-item">
-                                <div class="activity-dot success"></div>
-                                <div class="flex-grow-1">
-                                    <div>Ad impression verified via AI Oracle</div>
-                                    <small class="text-light text-dim" style="font-size: 0.75rem;">Just now</small>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-dot success"></div>
-                                <div class="flex-grow-1">
-                                    <div>Publisher reward of 100 ADC tokens generated</div>
-                                    <small class="text-light text-dim" style="font-size: 0.75rem;">2 mins ago</small>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-dot"></div>
-                                <div class="flex-grow-1">
-                                    <div>MetaMask wallet payout processed</div>
-                                    <small class="text-light text-dim" style="font-size: 0.75rem;">15 mins ago</small>
-                                </div>
-                            </div>
-                            <div class="activity-item">
-                                <div class="activity-dot success"></div>
-                                <div class="flex-grow-1">
-                                    <div>AI integrity validator check complete</div>
-                                    <small class="text-light text-dim" style="font-size: 0.75rem;">42 mins ago</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div class="d-flex justify-content-between">
+                <span>Total Earnings:</span>
+                <strong id="totalEarnings">
+                    {% for video in videos %}{{ video.earnings_eth }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %} ETH
+                </strong>
             </div>
         </div>
-
-        <!-- ================= AD INVENTORY TAB ================= -->
-        <div class="tab-pane-custom" id="inventory-section">
-            <h5 class="text-white fw-bold mb-4"><i class="bi bi-collection-play-fill me-2 text-info"></i>Uploaded Media Assets</h5>
-            
-            {% if videos %}
-                <div class="row g-4">
-                    {% for video in videos %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="video-inventory-card">
-                            <div class="video-thumbnail-container">
-                                <i class="bi bi-play-circle-fill video-thumbnail-icon"></i>
-                                <span class="badge bg-dark border-secondary  position-absolute" style="bottom: 12px; left: 12px; font-size: 0.75rem;">Active ad host</span>
-                            </div>
-                            <div class="p-4">
-                                <h6 class="text-white fw-bold text-truncate mb-1">{{ video.title }}</h6>
-                                <small class="text-light d-block mb-3"><i class="bi bi-calendar-event me-1"></i>Uploaded: {{ video.uploaded_at|date:"M d, Y" }}</small>
-                                
-                                <div class="py-2.5 px-3 rounded-3 bg-dark bg-opacity-40 mb-3" style="border: 1px solid rgba(255,255,255,0.03);">
-                                    <div class="d-flex justify-content-between mb-1.5 small text-light">
-                                        <span>Impressions:</span>
-                                        <strong class="text-white impressions-count" data-video-id="{{ video.id }}">{{ video.impressions }}</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-1.5 small text-light">
-                                        <span>Earned ETH:</span>
-                                        <strong class="text-info earnings-eth" data-video-id="{{ video.id }}">{{ video.earnings_eth }} ETH</strong>
-                                    </div>
-                                    <div class="d-flex justify-content-between small text-light">
-                                        <span>Earned ADC:</span>
-                                        <strong class="text-info earnings-tokens" data-video-id="{{ video.id }}">{{ video.earnings_tokens }} ADC</strong>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex gap-2">
-                                    <a href="{{ video.video_file.url }}" target="_blank" class="btn btn-sm btn-secondary-outline w-50 py-2">
-                                        <i class="bi bi-eye me-1.5"></i>Preview
-                                    </a>
-                                    <button class="btn btn-sm btn-primary-glow simulate-view w-50 py-2" data-video-id="{{ video.id }}">
-                                        <i class="bi bi-lightning-fill me-1"></i>Simulate View
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <div class="text-center py-5 glass-card" style="border-style: dashed;">
-                    <i class="bi bi-cloud-arrow-up text-light display-4"></i>
-                    <h5 class="text-white mt-3 fw-bold">No visual assets available</h5>
-                    <p class="text-light small">Connect SDK parameters inside your websites to begin hosting ads.</p>
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- ================= ANALYTICS TAB ================= -->
-        <div class="tab-pane-custom" id="analytics-section">
-            <div class="row g-4 mb-4">
-                <div class="col-lg-6">
-                    <div class="glass-card p-4">
-                        <h5 class="text-white fw-bold mb-4">Engagement Distribution</h5>
-                        <div style="position: relative; height: 260px;">
-                            <canvas id="impressionsBarChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="glass-card p-4">
-                        <h5 class="text-white fw-bold mb-4">Earnings Breakdown (ETH vs ADC)</h5>
-                        <div style="position: relative; height: 260px;">
-                            <canvas id="earningsDonutChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= DYNAMIC PRICING TAB ================= -->
-        <div class="tab-pane-custom" id="pricing-section">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-8">
-                    <div class="glass-card p-4">
-                        <h5 class="text-white fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Ad Slot Market Fluctuations</h5>
-                        <div style="position: relative; height: 260px;">
-                            <canvas id="marketRatesChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-4">
-                    <div class="glass-card p-4">
-                        <span class="text-light text-uppercase small d-block mb-1 font-monospace">Current Impression Price</span>
-                        <h2 class="text-white fw-extrabold mb-3"><span id="liveAdPriceVal">0.000073</span> ETH <span class="badge bg-warning bg-opacity-15  border border-warning border-opacity-20 align-middle">DEMO / SIMULATED</span></h2>
-                        
-                        <div class="d-flex flex-column gap-3 mb-4">
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-10">
-                                <span class="text-light small">Index Demand</span>
-                                <span class=" small fw-bold" id="liveDemandIndicator">High <i class="bi bi-arrow-up-right "></i></span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom border-secondary border-opacity-10">
-                                <span class="text-light small">Available Slots</span>
-                                <span class="text-white small fw-bold" id="liveInventoryIndicator">134 Ad Slots</span>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center py-2">
-                                <span class="text-light small">Daily Change</span>
-                                <span class=" small fw-bold">+4.8% ↑</span>
-                            </div>
-                        </div>
-
-                        <p class="text-light small bg-dark bg-opacity-40 p-3 rounded-3 mb-0" style="border: 1px solid rgba(255,255,255,0.03);">
-                            <i class="bi bi-info-circle me-1.5 text-primary"></i>Ad prices dynamically adjust according to live advertiser budgets demand, engagement rates, and publisher available slot inventory.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= FRAUD DETECTION TAB ================= -->
-        <div class="tab-pane-custom" id="fraud-section">
-            <div class="row g-4">
-                <div class="col-lg-4">
-                    <div class="glass-card p-4 text-center">
-                        <h5 class="text-white fw-bold mb-4 text-start">Traffic Verification Status</h5>
-                        
-                        <div class="d-inline-flex align-items-center justify-content-center mb-3  border border-success border-opacity-20 rounded-circle" style="width: 140px; height: 140px; background: rgba(16,185,129,0.03); box-shadow: 0 0 25px rgba(16,185,129,0.15);">
-                            <div>
-                                <h2 class="fw-extrabold  mb-0" style="font-size: 2.2rem;">98.7%</h2>
-                                <small class="text-light text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.05em;">Verified</small>
-                            </div>
-                        </div>
-
-                        <h6 class="text-white fw-bold mb-1">Verification Demo</h6>
-                        <p class="text-light small mb-0">DEMO / SIMULATED verification state. Production fraud detection is not active in this prototype.</p>
-                    </div>
-                </div>
-
-                <div class="col-lg-8">
-                    <div class="glass-card p-4 h-100">
-                        <h5 class="text-white fw-bold mb-4">Fraud Prevention Metrics</h5>
-                        
-                        <div class="row g-4 mb-4">
-                            <div class="col-sm-4 text-center">
-                                <h3 class="text-white fw-extrabold mb-1">34,500</h3>
-                                <small class="text-light">Total Views Audited</small>
-                            </div>
-                            <div class="col-sm-4 text-center border-start border-secondary border-opacity-10">
-                                <h3 class=" fw-extrabold mb-1">421</h3>
-                                <small class="text-light">Suspicious Requests</small>
-                            </div>
-                            <div class="col-sm-4 text-center border-start border-secondary border-opacity-10">
-                                <h3 class="text-danger fw-extrabold mb-1">380</h3>
-                                <small class="text-light">Blocked Bots</small>
-                            </div>
-                        </div>
-
-                        <h6 class="text-white fw-bold mb-3 small text-uppercase" style="letter-spacing: 0.05em;">Verification Pipeline</h6>
-                        
-                        <!-- Pipeline graphic -->
-                        <div class="d-flex justify-content-between align-items-center p-3 rounded-4 bg-dark bg-opacity-40 border border-secondary border-opacity-10 text-center small text-light font-body">
-                            <div>
-                                <div class="mb-1 text-primary"><i class="bi bi-broadcast" style="font-size: 1.25rem;"></i></div>
-                                <div>Raw Traffic</div>
-                            </div>
-                            <div><i class="bi bi-chevron-right text-light"></i></div>
-                            <div>
-                                <div class="mb-1 text-info"><i class="bi bi-cpu" style="font-size: 1.25rem;"></i></div>
-                                <div>AI Audit</div>
-                            </div>
-                            <div><i class="bi bi-chevron-right text-light"></i></div>
-                            <div>
-                                <div class="mb-1 "><i class="bi bi-shield-lock" style="font-size: 1.25rem;"></i></div>
-                                <div>Oracle Confirm</div>
-                            </div>
-                            <div><i class="bi bi-chevron-right text-light"></i></div>
-                            <div>
-                                <div class="mb-1 "><i class="bi bi-patch-check-fill" style="font-size: 1.25rem;"></i></div>
-                                <div>Valid View</div>
-                            </div>
-                            <div><i class="bi bi-chevron-right text-light"></i></div>
-                            <div>
-                                <div class="mb-1 "><i class="bi bi-currency-exchange" style="font-size: 1.25rem;"></i></div>
-                                <div>Payout Released</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= WALLET TAB ================= -->
-        <div class="tab-pane-custom" id="wallet-section">
-            <div class="row g-4">
-                <div class="col-lg-5">
-                    <div class="glass-card p-4 text-white" style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);">
-                        <h6 class="text-light text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.05em;">Connected Account</h6>
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <span class="fw-bold font-monospace" style="font-size: 1.15rem;">{{ user_profile.wallet_address|slice:":12" }}...{{ user_profile.wallet_address|slice:"-8:" }}</span>
-                            <button class="btn btn-sm btn-outline-light border-0 btn-copy-address" data-address="{{ user_profile.wallet_address }}"><i class="bi bi-clipboard"></i></button>
-                        </div>
-                        
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <small class="text-light d-block mb-1">ETH Balance</small>
-                                <h4 class="text-white fw-bold mb-0" id="ethBalanceVal">{{ user_profile.eth_balance|floatformat:4 }} ETH</h4>
-                            </div>
-                            <div class="col-6">
-                                <small class="text-light d-block mb-1">ADC Balance</small>
-                                <h4 class="text-white fw-bold mb-0" id="tokenBalanceVal">{{ user_profile.token_balance }} ADC</h4>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-7">
-                    <div class="glass-card p-4">
-                        <h5 class="text-white fw-bold mb-3">On-Chain Activity <span class="badge bg-warning bg-opacity-15  border border-warning border-opacity-20 ms-2">TESTNET / DEMO</span></h5>
-                        
-                        <div class="table-responsive small">
-                            <table class="table table-dark table-borderless align-middle mb-0">
-                                <thead>
-                                    <tr class="text-light" style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                                        <th class="py-2.5">Tx Hash</th>
-                                        <th class="py-2.5">Event</th>
-                                        <th class="py-2.5">Amount</th>
-                                        <th class="py-2.5">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
-                                        <td class="font-monospace text-primary py-3">0x8a92...b841</td>
-                                        <td>Impression verified</td>
-                                        <td class="">+100 ADC</td>
-                                        <td><span class="badge bg-success bg-opacity-15  border border-success border-opacity-20 rounded-pill px-2.5 py-1">Confirmed</span></td>
-                                    </tr>
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
-                                        <td class="font-monospace text-primary py-3">0xc940...3a10</td>
-                                        <td>Payout execution</td>
-                                        <td class="">+0.01 ETH</td>
-                                        <td><span class="badge bg-success bg-opacity-15  border border-success border-opacity-20 rounded-pill px-2.5 py-1">Confirmed</span></td>
-                                    </tr>
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
-                                        <td class="font-monospace text-primary py-3">0xef83...10b9</td>
-                                        <td>Key validation</td>
-                                        <td class="text-light">0 ETH</td>
-                                        <td><span class="badge bg-success bg-opacity-15  border border-success border-opacity-20 rounded-pill px-2.5 py-1">Confirmed</span></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
-</div>
-{% endblock %}
 
+    <!-- 📍 Column 2: Videos -->
+    <div class="col-lg-6">
+        <h4 class="text-white mb-4"><i class="bi bi-collection-play me-2"></i> Videos</h4>
+
+        {% if videos %}
+            <div class="row">
+                {% for video in videos %}
+                <div class="col-md-6">
+                    <div class="bg-dark text-white border border-secondary rounded p-3 mb-4 shadow-sm">
+                        <h6 class="text-success">{{ video.title }}</h6>
+                        <p class="text-muted small mb-2">
+                            <i class="bi bi-calendar-event me-1"></i> Uploaded: {{ video.uploaded_at|date:"M d, Y" }}
+                        </p>
+
+                        <div class="mb-2">
+                            <small class="text-muted">Performance:</small>
+                            <div class="d-flex justify-content-between">
+                                <span>Impressions:</span>
+                                <strong class="text-info impressions-count" data-video-id="{{ video.id }}">{{ video.impressions }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Earnings (ETH):</span>
+                                <strong class="text-info earnings-eth" data-video-id="{{ video.id }}">{{ video.earnings_eth }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Earnings (ADC):</span>
+                                <strong class="text-info earnings-tokens" data-video-id="{{ video.id }}">{{ video.earnings_tokens }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="btn-group w-100">
+                            <a href="{{ video.video_file.url }}" class="btn btn-outline-light btn-sm" target="_blank">
+                                👁️ View
+                            </a>
+                            <button class="btn btn-success btn-sm simulate-view" data-video-id="{{ video.id }}">
+                                🎯 Simulate Ad View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <h5 class="text-white">No videos uploaded yet</h5>
+                <p class="">Connect SDK to start earning!</p>
+            </div>
+        {% endif %}
+    </div>
+
+  
+
+</div>
+
+{% endblock %}
 {% block extra_js %}
 <script>
-    // Simulate ad view POST integration
+    // Simulate ad view functionality
     document.addEventListener('DOMContentLoaded', function() {
         const simulateButtons = document.querySelectorAll('.simulate-view');
         
         simulateButtons.forEach(button => {
             button.addEventListener('click', async function() {
                 const videoId = this.dataset.videoId;
-                const originalContent = this.innerHTML;
+                const originalText = this.textContent;
                 
+                // Disable button and show loading
                 this.disabled = true;
-                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Audit...';
+                this.textContent = '⏳ Processing...';
                 
                 try {
                     const response = await fetch(`/simulate_ad_view/${videoId}/`, {
@@ -518,301 +132,62 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        // Update individual video row variables
-                        const impressionsEl = document.querySelector(`.impressions-count[data-video-id="${videoId}"]`);
-                        const ethEl = document.querySelector(`.earnings-eth[data-video-id="${videoId}"]`);
-                        const tokensEl = document.querySelector(`.earnings-tokens[data-video-id="${videoId}"]`);
+                        // Update video stats
+                        document.querySelector(`.impressions-count[data-video-id="${videoId}"]`).textContent = data.impressions;
+                        document.querySelector(`.earnings-eth[data-video-id="${videoId}"]`).textContent = data.earnings_eth;
+                        document.querySelector(`.earnings-tokens[data-video-id="${videoId}"]`).textContent = data.earnings_tokens;
                         
-                        if (impressionsEl) impressionsEl.textContent = data.impressions;
-                        if (ethEl) ethEl.textContent = parseFloat(data.earnings_eth).toFixed(4) + ' ETH';
-                        if (tokensEl) tokensEl.textContent = data.earnings_tokens + ' ADC';
+                        // Update user balance
+                        document.getElementById('ethBalance').textContent = data.publisher_eth_balance;
+                        document.getElementById('tokenBalance').textContent = data.publisher_token_balance;
                         
-                        // Update top summary cards
-                        const ethOverview = document.getElementById('ethBalanceOverview');
-                        const tokenOverview = document.getElementById('tokenBalanceOverview');
-                        const ethWallet = document.getElementById('ethBalanceVal');
-                        const tokenWallet = document.getElementById('tokenBalanceVal');
-                        
-                        if (ethOverview) ethOverview.textContent = parseFloat(data.publisher_eth_balance).toFixed(4) + ' ETH';
-                        if (tokenOverview) tokenOverview.textContent = data.publisher_token_balance;
-                        if (ethWallet) ethWallet.textContent = parseFloat(data.publisher_eth_balance).toFixed(4) + ' ETH';
-                        if (tokenWallet) tokenWallet.textContent = data.publisher_token_balance + ' ADC';
-
-                        const impressionPrice = parseFloat(data.impression_price) || 0.00005;
-                        const availableEarnings = parseFloat(localStorage.getItem('adchain_publisher_earnings')) || 0;
-                        const totalEarnings = parseFloat(localStorage.getItem('adchain_publisher_total')) || 0;
-                        localStorage.setItem('adchain_publisher_earnings', (availableEarnings + impressionPrice).toString());
-                        localStorage.setItem('adchain_publisher_total', (totalEarnings + impressionPrice).toString());
-                        const availableEl = document.getElementById('publisherAvailableVal');
-                        if (availableEl) {
-                            availableEl.textContent = (availableEarnings + impressionPrice).toFixed(5) + ' ETH';
-                        }
-                        
-                        // Increment total impressions overview
-                        const totalImpressionsEl = document.getElementById('totalImpressionsVal');
-                        if (totalImpressionsEl) {
-                            const curTotal = parseInt(totalImpressionsEl.textContent) || 0;
-                            totalImpressionsEl.textContent = curTotal + 1;
-                        }
-                        
-                        showToast('Ad view simulated successfully! Balance updated.', 'success');
+                        // Show success message
+                        showAlert('success', 'Ad view simulated! Earnings updated.');
                     } else {
-                        showToast('Verification refused by network node.', 'danger');
+                        showAlert('danger', 'Error simulating ad view.');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    showToast('Connection timed out. Check MetaMask status.', 'danger');
+                    showAlert('danger', 'Network error occurred.');
                 }
                 
+                // Re-enable button
                 this.disabled = false;
-                this.innerHTML = originalContent;
+                this.textContent = originalText;
             });
         });
-
-        // Sum total impressions dynamically on load
-        let totalImp = 0;
-        document.querySelectorAll('.impressions-count').forEach(el => {
-            totalImp += parseInt(el.textContent) || 0;
-        });
-        const totalImpressionsEl = document.getElementById('totalImpressionsVal');
-        if (totalImpressionsEl) {
-            totalImpressionsEl.textContent = totalImp;
-        }
-
-        // Initialize Charts inside dashboard
-        initDashboardCharts();
     });
 
-    function initDashboardCharts() {
-        // Line chart for publisher revenue
-        const revCtx = document.getElementById('publisherRevenueChart');
-        if (revCtx) {
-            const chartCtx = revCtx.getContext('2d');
-            const purpleGradient = chartCtx.createLinearGradient(0, 0, 0, 280);
-            purpleGradient.addColorStop(0, 'rgba(124, 58, 237, 0.35)');
-            purpleGradient.addColorStop(1, 'rgba(124, 58, 237, 0.0)');
-
-            new Chart(chartCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Earnings (ETH)',
-                        data: [0.045, 0.078, 0.062, 0.095, 0.12, 0.11, 0.15],
-                        borderColor: '#7c3aed',
-                        borderWidth: 2.5,
-                        backgroundColor: purpleGradient,
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 3,
-                        pointBackgroundColor: '#7c3aed'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#64748b' } },
-                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        // Bar Chart for engagement
-        const impCtx = document.getElementById('impressionsBarChart');
-        if (impCtx) {
-            new Chart(impCtx.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: ['Video A', 'Video B', 'Video C', 'Video D', 'Video E'],
-                    datasets: [{
-                        label: 'Ad Impressions',
-                        data: [250, 480, 190, 620, 310],
-                        backgroundColor: '#2563eb',
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#64748b' } },
-                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
-
-        // Donut Chart for ETH vs Tokens
-        const earningsCtx = document.getElementById('earningsDonutChart');
-        if (earningsCtx) {
-            new Chart(earningsCtx.getContext('2d'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['ETH Earnings Value', 'ADC Token Value'],
-                    datasets: [{
-                        data: [65, 35],
-                        backgroundColor: ['#7c3aed', '#d946ef'],
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { color: '#f8fafc', boxWidth: 12, font: { family: 'Outfit' } }
-                        }
-                    },
-                    cutout: '70%'
-                }
-            });
-        }
-
-        // Live Market pricing line chart
-        const mktCtx = document.getElementById('marketRatesChart');
-        if (mktCtx) {
-            const chartCtx = mktCtx.getContext('2d');
-            const blueGradient = chartCtx.createLinearGradient(0, 0, 0, 260);
-            blueGradient.addColorStop(0, 'rgba(37, 99, 235, 0.3)');
-            blueGradient.addColorStop(1, 'rgba(37, 99, 235, 0.0)');
-
-            new Chart(chartCtx, {
-                type: 'line',
-                data: {
-                    labels: ['10 AM', '11 AM', '12 PM', '1 PM', '2 PM', '3 PM', '4 PM'],
-                    datasets: [{
-                        label: 'Rate',
-                        data: [0.0410, 0.0425, 0.0418, 0.0435, 0.0442, 0.0450, 0.0455],
-                        borderColor: '#2563eb',
-                        borderWidth: 2,
-                        backgroundColor: blueGradient,
-                        tension: 0.45,
-                        fill: true,
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { grid: { color: 'rgba(255, 255, 255, 0.03)' }, ticks: { color: '#64748b' } },
-                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
-        }
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 3000);
     }
 
-    function initMarketRatesChart() {
-    const canvas = document.getElementById('marketRatesChart');
-
-    if (!canvas) return;
-
-    // Destroy old chart if already created
-    if (marketRatesChart) {
-        marketRatesChart.destroy();
-    }
-
-    const ctx = canvas.getContext('2d');
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 260);
-    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.30)');
-    gradient.addColorStop(1, 'rgba(37, 99, 235, 0.00)');
-
-    marketRatesChart = new Chart(ctx, {
-        type: 'line',
-
-        data: {
-            labels: [
-                '10 AM',
-                '11 AM',
-                '12 PM',
-                '1 PM',
-                '2 PM',
-                '3 PM',
-                '4 PM'
-            ],
-
-            datasets: [{
-                label: 'Ad Space Rate',
-                data: [
-                    0.000061,
-                    0.000066,
-                    0.000063,
-                    0.000070,
-                    0.000068,
-                    0.000075,
-                    0.000073
-                ],
-
-                borderColor: '#2563eb',
-                borderWidth: 3,
-                backgroundColor: gradient,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }]
-        },
-
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-
-            animation: {
-                duration: 800
-            },
-
-            scales: {
-                y: {
-                    beginAtZero: false,
-
-                    ticks: {
-                        color: '#94a3b8',
-                        callback: function(value) {
-                            return value.toFixed(6) + ' ETH';
-                        }
-                    },
-
-                    grid: {
-                        color: 'rgba(255,255,255,0.05)'
-                    }
-                },
-
-                x: {
-                    ticks: {
-                        color: '#94a3b8'
-                    },
-
-                    grid: {
-                        display: false
-                    }
-                }
-            },
-
-            plugins: {
-                legend: {
-                    display: false
-                },
-
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return ' Rate: ' +
-                                context.parsed.y.toFixed(6) +
-                                ' ETH';
-                        }
-                    }
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
         }
-    });
-}
+        return cookieValue;
+    }
 </script>
-{% endblock %}
+{% endblock %}  
