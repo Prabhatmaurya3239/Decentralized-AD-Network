@@ -1,48 +1,78 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Login {% endblock %}
+
+{% block title %}Account Login - AdChain Web3 Network{% endblock %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-    <div class="card shadow p-4 text-white" 
-         style="max-width: 500px; width: 100%; border-radius: 15px; background-color: #1e1e2f; border: 1px solid #2d2d3f;">
-        
-        <h3 class="text-center mb-4 text-success">🔐 Login</h3>
-
-        <form method="POST">
-            {% csrf_token %}
-            
-            <!-- Username / Email -->
-            <div class="mb-3">
-                <label class="form-label text-light">Username / Email</label>
-                <input type="text" name="username_or_email" class="form-control bg-dark text-white border-secondary" required>
-            </div>
-
-            <!-- Wallet Address with Connect Button -->
-            <div class="mb-3">
-                <label class="form-label text-light">Wallet Address</label>
-                <div class="d-flex">
-                    <input type="text" id="walletAddress" name="wallet_address" 
-                           class="form-control bg-dark text-white border-secondary" 
-                           placeholder="Click connect to fetch wallet" readonly required>
-                    
-                    <button type="button" id="connectWallet" class="btn btn-outline-success ms-2">
-                        Connect
-                    </button>
-                    <button type="button" id="disconnectWallet" class="btn btn-outline-danger ms-2 d-none">
-                        Disconnect
-                    </button>
+<div class="row justify-content-center align-items-center py-5 my-2">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="glass-card p-4 p-sm-5 glow-pulse-cyan">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="stat-icon-wrapper stat-icon-cyan mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.6rem;">
+                    <i class="bi bi-shield-lock-fill"></i>
                 </div>
+                <h3 class="fw-bold text-white mb-1">AdChain Portal Login</h3>
+                <p class="text-secondary small">Authenticate with your credentials and verified Web3 wallet.</p>
             </div>
 
-            <!-- Password -->
-            <div class="mb-3">
-                <label class="form-label text-light">Password</label>
-                <input type="password" name="password" class="form-control bg-dark text-white border-secondary" required>
-            </div>
+            <!-- Login Form -->
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Username / Email -->
+                <div class="mb-3">
+                    <label class="form-label">Username or Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username_or_email" class="form-control" placeholder="Enter username or email" required autofocus>
+                    </div>
+                </div>
 
-            <button type="submit" class="btn btn-success w-100 mt-3">Login</button>
-        </form>
+                <!-- Wallet Address with Connect Button -->
+                <div class="mb-3">
+                    <label class="form-label">Associated Web3 Wallet</label>
+                    <div class="d-flex gap-2">
+                        <div class="input-group flex-grow-1">
+                            <span class="input-group-text"><i class="bi bi-wallet2 text-info"></i></span>
+                            <input type="text" id="walletAddress" name="wallet_address" 
+                                   class="form-control font-monospace" 
+                                   placeholder="Click connect to fetch wallet" readonly required>
+                        </div>
+                        
+                        <button type="button" id="connectWallet" class="btn btn-web3-cyan text-nowrap px-3">
+                            <i class="bi bi-link-45deg me-1"></i> Connect
+                        </button>
+                        <button type="button" id="disconnectWallet" class="btn btn-outline-danger text-nowrap px-3 d-none">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <small class="text-secondary d-block mt-1">Must match the wallet registered to your profile.</small>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control" placeholder="••••••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-web3-primary w-100 py-3 shadow-lg">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to AdChain
+                </button>
+            </form>
+
+            <div class="mt-4 pt-3 border-top border-secondary border-opacity-25 text-center">
+                <p class="text-secondary small mb-0">
+                    New to AdChain? 
+                    <a href="{% url 'select_role' %}" class="text-info fw-semibold text-decoration-none ms-1">
+                        Register as Publisher or Advertiser &rarr;
+                    </a>
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -53,33 +83,44 @@
     const disconnectBtn = document.getElementById("disconnectWallet");
     const walletInput = document.getElementById("walletAddress");
 
-    // ✅ Connect wallet
+    // Connect wallet
     connectBtn.addEventListener("click", async () => {
         if (typeof window.ethereum !== "undefined") {
             try {
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 if (accounts.length > 0) {
-                    walletInput.value = accounts[0];  // autofill wallet
+                    walletInput.value = accounts[0];
                     connectBtn.classList.add("d-none");
                     disconnectBtn.classList.remove("d-none");
+                    if (window.showToast) {
+                        window.showToast("MetaMask wallet connected successfully!", "success");
+                    }
                 }
             } catch (err) {
                 console.error(err);
-                alert("⚠️ Wallet connection cancelled!");
+                if (window.showToast) {
+                    window.showToast("Wallet connection cancelled.", "danger");
+                } else {
+                    alert("Wallet connection cancelled!");
+                }
             }
         } else {
-            alert("⚠️ Please install MetaMask extension in your browser!");
+            if (window.showToast) {
+                window.showToast("Please install the MetaMask extension in your browser.", "warning");
+            } else {
+                alert("Please install MetaMask extension in your browser!");
+            }
         }
     });
 
-    // ✅ Disconnect wallet
+    // Disconnect wallet
     disconnectBtn.addEventListener("click", () => {
         walletInput.value = "";
         disconnectBtn.classList.add("d-none");
         connectBtn.classList.remove("d-none");
     });
 
-    // ✅ Auto-check on page load (if already connected)
+    // Auto-check on page load (if already connected)
     window.addEventListener("load", async () => {
         if (typeof window.ethereum !== "undefined") {
             try {

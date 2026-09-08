@@ -1,134 +1,288 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Publisher SDK Documentation - AdChain Web3 Network{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-4">
-  <div class="row">
-    
-    <!-- Sidebar -->
-    <div class="col-md-3 col-lg-2 bg-dark text-white p-3 rounded-3 sticky-top" style="height: 90vh; overflow-y: auto;">
-      <h5 class="mb-3">📚 Docs</h5>
-      <ul class="nav flex-column">
-        <li class="nav-item"><a href="#intro" class="nav-link text-white">Introduction</a></li>
-        <li class="nav-item"><a href="#installation" class="nav-link text-white">Installation</a></li>
-        <li class="nav-item"><a href="#auth" class="nav-link text-white">Authentication</a></li>
-        <li class="nav-item"><a href="#integration" class="nav-link text-white">Integration</a></li>
-        <li class="nav-item"><a href="#customization" class="nav-link text-white">Customization</a></li>
-        <li class="nav-item"><a href="#reporting" class="nav-link text-white">Reporting</a></li>
-        <li class="nav-item"><a href="#faq" class="nav-link text-white">FAQ</a></li>
-      </ul>
-    </div>
+<div class="row g-4 py-3">
+    <!-- Sticky Glass Sidebar Navigation -->
+    <div class="col-lg-3">
+        <div class="glass-card p-3 sticky-top" style="top: 85px; z-index: 10;">
+            <div class="d-flex align-items-center gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                <div class="stat-icon-wrapper stat-icon-cyan mb-0" style="width: 32px; height: 32px; font-size: 1rem;">
+                    <i class="bi bi-journal-code"></i>
+                </div>
+                <h6 class="fw-bold text-white mb-0">SDK Guide</h6>
+            </div>
+            
+            <nav class="nav flex-column gap-1 docs-nav">
+                <a href="#intro" class="nav-link py-2 px-3 rounded-3 text-secondary small active">
+                    <i class="bi bi-info-circle me-2 text-info"></i> Introduction
+                </a>
+                <a href="#installation" class="nav-link py-2 px-3 rounded-3 text-secondary small">
+                    <i class="bi bi-download me-2 text-info"></i> Installation
+                </a>
+                <a href="#auth" class="nav-link py-2 px-3 rounded-3 text-secondary small">
+                    <i class="bi bi-key me-2 text-warning"></i> Authentication
+                </a>
+                <a href="#integration" class="nav-link py-2 px-3 rounded-3 text-secondary small">
+                    <i class="bi bi-lightning-charge me-2 text-info"></i> HTML Integration
+                </a>
+                <a href="#customization" class="nav-link py-2 px-3 rounded-3 text-secondary small">
+                    <i class="bi bi-sliders me-2 text-purple" style="color: #c084fc;"></i> Customization
+                </a>
+                <a href="#reporting" class="nav-link py-2 px-3 rounded-3 text-secondary small">
+                    <i class="bi bi-graph-up me-2 text-success"></i> Reporting API
+                </a>
+                <a href="#faq" class="nav-link py-2 px-3 rounded-3 text-secondary small">
+                    <i class="bi bi-question-circle me-2 text-muted"></i> FAQ
+                </a>
+            </nav>
 
-    <!-- Main Content -->
-    <div class="col-md-9 col-lg-10">
-      <h2 class="fw-bold">Publisher SDK Documentation</h2>
-      <p class="text-muted">Integrate our Ads into your website and start monetizing in minutes 🚀</p>
-      <hr>
-
-      <!-- Introduction -->
-      <section id="intro" class="mb-5">
-        <h4>👋 Introduction</h4>
-        <p>
-          Welcome to our <b>Publisher SDK</b>.  
-          Using this SDK, you can easily integrate <b>ads on your website</b> and earn revenue.  
-          The SDK is lightweight, customizable, and works seamlessly across devices.
-        </p>
-      </section>
-
-      <!-- Installation -->
-      <section id="installation" class="mb-5">
-        <h4>📦 Installation</h4>
-        <p>Add our script to your website's <code>&lt;head&gt;</code>:</p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-&lt;script src="https://cdn.myad.com/sdk.js"&gt;&lt;/script&gt;
-</code>
-</pre>
-      </section>
-
-      <!-- Authentication -->
-      <section id="auth" class="mb-5">
-        <h4>🔑 Authentication</h4>
-        <p>
-          Every publisher gets a unique <b>API Key</b> from their dashboard.  
-          Use this key to authenticate and load ads on your site.
-        </p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-&lt;script&gt;
-   window.myAdConfig = {
-       apiKey: "YOUR_API_KEY",
-       publisherId: "PUB123456"
-   };
-&lt;/script&gt;
-</code>
-</pre>
-      </section>
-
-      <!-- Integration -->
-      <section id="integration" class="mb-5">
-        <h4>⚡ Integration</h4>
-        <p>Place ad slots anywhere in your HTML:</p>
-
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-&lt;div class="ad-slot" data-ad-size="300x250" data-ad-id="banner1"&gt;&lt;/div&gt;
-</code>
-</pre>
-
-        <p>The SDK automatically detects <code>.ad-slot</code> elements and fills them with ads.</p>
-
-        <h6>Example Output:</h6>
-        <div class="border rounded p-3 bg-light text-center">
-          <span class="text-muted">[Ad Banner 300x250]</span>
+            <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+                <button type="button" class="btn btn-web3-cyan btn-sm w-100 py-2" data-bs-toggle="modal" data-bs-target="#apiKeyModal">
+                    <i class="bi bi-key-fill me-1"></i> Get API Key
+                </button>
+            </div>
         </div>
-      </section>
-
-      <!-- Customization -->
-      <section id="customization" class="mb-5">
-        <h4>🎨 Customization</h4>
-        <p>You can control ad behavior using <code>data-*</code> attributes:</p>
-        <table class="table table-bordered table-striped">
-          <thead class="table-dark">
-            <tr><th>Attribute</th><th>Values</th><th>Description</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>data-ad-size</td><td>300x250, 728x90, 160x600</td><td>Set ad dimensions</td></tr>
-            <tr><td>data-ad-theme</td><td>light / dark</td><td>Choose ad theme</td></tr>
-            <tr><td>data-ad-id</td><td>unique name</td><td>Unique slot identifier</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- Reporting -->
-      <section id="reporting" class="mb-5">
-        <h4>📊 Reporting</h4>
-        <p>Fetch real-time ad stats using API:</p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-curl -H "Authorization: Bearer YOUR_API_KEY" \
-https://api.myad.com/v1/stats
-</code>
-</pre>
-        <p>Example response:</p>
-<pre class="bg-dark text-success p-3 rounded">
-<code>
-{
-   "impressions": 12345,
-   "clicks": 678,
-   "revenue": 45.67
-}
-</code>
-</pre>
-      </section>
-
-      <!-- FAQ -->
-      <section id="faq" class="mb-5">
-        <h4>❓ FAQ</h4>
-        <p><b>Q: How long does it take to start showing ads?</b></p>
-        <p>A: Ads usually start appearing within minutes after integration.</p>
-        <p><b>Q: Can I use multiple ad slots?</b></p>
-        <p>A: Yes, just add multiple <code>div.ad-slot</code> elements.</p>
-      </section>
     </div>
-  </div>
+
+    <!-- Main Docs Content Area -->
+    <div class="col-lg-9">
+        <div class="glass-card p-4 p-md-5">
+            <!-- Documentation Title Header -->
+            <div class="border-bottom border-secondary border-opacity-25 pb-4 mb-5">
+                <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3" style="background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.25);">
+                    <span class="status-dot-pulse"></span>
+                    <span class="text-info small fw-bold font-monospace">VERSION 2.4.0 • PRODUCTION</span>
+                </div>
+                <h1 class="display-6 fw-extrabold text-white mb-2">Publisher SDK Integration</h1>
+                <p class="lead-text mb-0">
+                    Stream decentralized video ads on your web properties and earn non-custodial crypto rewards per verified impression.
+                </p>
+            </div>
+
+            <!-- Introduction -->
+            <section id="intro" class="mb-5 scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-stars text-info"></i> Introduction
+                </h4>
+                <p class="text-secondary">
+                    Welcome to the <strong>AdChain Publisher SDK</strong>. Using our ultra-lightweight client library (&lt; 12KB), you can seamlessly integrate transparent Web3 ads onto your existing website and earn instant ETH and ADC token payouts directly to your registered wallet address.
+                </p>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle);">
+                            <i class="bi bi-speedometer2 text-info fs-5 d-block mb-1"></i>
+                            <h6 class="text-white fw-bold mb-1">Fast & Lightweight</h6>
+                            <small class="text-muted">Zero dependency bundle optimized for Core Web Vitals.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle);">
+                            <i class="bi bi-shield-check text-success fs-5 d-block mb-1"></i>
+                            <h6 class="text-white fw-bold mb-1">Anti-Fraud Protection</h6>
+                            <small class="text-muted">Cryptographic view signatures prevent bot traffic.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle);">
+                            <i class="bi bi-coin text-warning fs-5 d-block mb-1"></i>
+                            <h6 class="text-white fw-bold mb-1">Dual Monetization</h6>
+                            <small class="text-muted">Receive payouts in both ETH and ADC tokens.</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Installation -->
+            <section id="installation" class="mb-5 scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-code-slash text-info"></i> Installation
+                </h4>
+                <p class="text-secondary">
+                    Add the AdChain Client SDK to the <code>&lt;head&gt;</code> section of your HTML document:
+                </p>
+
+                <div class="position-relative mb-4">
+                    <pre class="p-3 rounded-3 font-monospace text-info small mb-0" style="background: rgba(0,0,0,0.5); border: 1px solid var(--border-glass);"><code>&lt;!-- AdChain Web3 Ad Network SDK --&gt;
+&lt;script src="https://cdn.adchain.network/sdk.v2.js" async&gt;&lt;/script&gt;</code></pre>
+                    <button class="btn btn-sm btn-web3-outline position-absolute top-0 end-0 m-2 py-1 px-2" onclick="navigator.clipboard.writeText('<script src=\"https://cdn.adchain.network/sdk.v2.js\" async><\/script>'); if(window.showToast) window.showToast('Copied to clipboard!', 'success');">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Authentication -->
+            <section id="auth" class="mb-5 scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-key-fill text-warning"></i> Authentication & Configuration
+                </h4>
+                <p class="text-secondary">
+                    Every publisher receives unique <strong>API Keys</strong> from the dashboard. Configure your credentials before loading the slots:
+                </p>
+
+                <div class="position-relative mb-4">
+                    <pre class="p-3 rounded-3 font-monospace text-info small mb-0" style="background: rgba(0,0,0,0.5); border: 1px solid var(--border-glass);"><code>&lt;script&gt;
+  window.adChainConfig = {
+    apiKey: "YOUR_PUBLISHER_API_KEY",
+    publisherWallet: "0xYourWalletAddress...",
+    network: "sepolia",
+    autoTrackViews: true
+  };
+&lt;/script&gt;</code></pre>
+                    <button class="btn btn-sm btn-web3-outline position-absolute top-0 end-0 m-2 py-1 px-2" onclick="navigator.clipboard.writeText('window.adChainConfig = {\n  apiKey: \"YOUR_PUBLISHER_API_KEY\",\n  publisherWallet: \"0xYourWalletAddress...\",\n  network: \"sepolia\",\n  autoTrackViews: true\n};'); if(window.showToast) window.showToast('Copied to clipboard!', 'success');">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- HTML Integration -->
+            <section id="integration" class="mb-5 scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-aspect-ratio text-info"></i> HTML Integration
+                </h4>
+                <p class="text-secondary">
+                    Place responsive ad slot containers anywhere in your web layout:
+                </p>
+
+                <div class="position-relative mb-4">
+                    <pre class="p-3 rounded-3 font-monospace text-info small mb-0" style="background: rgba(0,0,0,0.5); border: 1px solid var(--border-glass);"><code>&lt;!-- Responsive AdSlot Container --&gt;
+&lt;div class="adchain-slot" 
+     data-ad-size="300x250" 
+     data-ad-theme="dark" 
+     data-ad-id="homepage-sidebar"&gt;
+&lt;/div&gt;</code></pre>
+                    <button class="btn btn-sm btn-web3-outline position-absolute top-0 end-0 m-2 py-1 px-2" onclick="navigator.clipboard.writeText('<div class=\"adchain-slot\" data-ad-size=\"300x250\" data-ad-theme=\"dark\" data-ad-id=\"homepage-sidebar\"></div>'); if(window.showToast) window.showToast('Copied to clipboard!', 'success');">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+
+                <h6 class="text-white fw-bold mb-2">Live Slot Preview:</h6>
+                <div class="p-4 rounded-3 text-center mb-4" style="background: rgba(0, 240, 255, 0.03); border: 2px dashed rgba(0, 240, 255, 0.3); max-width: 320px;">
+                    <div class="d-flex align-items-center justify-content-center gap-2 text-info mb-1">
+                        <i class="bi bi-broadcast"></i>
+                        <span class="font-monospace fw-bold small">AdChain Live Slot • 300x250</span>
+                    </div>
+                    <small class="text-muted">Decentralized Web3 Ad Feed</small>
+                </div>
+            </section>
+
+            <!-- Customization Table -->
+            <section id="customization" class="mb-5 scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-sliders text-purple" style="color: #c084fc;"></i> Slot Configuration Parameters
+                </h4>
+                <p class="text-secondary">
+                    Customize slot behavior and presentation using declarative data attributes:
+                </p>
+
+                <div class="table-responsive">
+                    <table class="table-custom-dark">
+                        <thead>
+                            <tr>
+                                <th>Attribute</th>
+                                <th>Allowed Values</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-monospace text-info">data-ad-size</td>
+                                <td><code>300x250</code>, <code>728x90</code>, <code>160x600</code>, <code>fluid</code></td>
+                                <td>Specifies the dimensions of the rendered video or banner ad slot.</td>
+                            </tr>
+                            <tr>
+                                <td class="font-monospace text-info">data-ad-theme</td>
+                                <td><code>dark</code>, <code>light</code>, <code>auto</code></td>
+                                <td>Configures glassmorphic or solid container styles.</td>
+                            </tr>
+                            <tr>
+                                <td class="font-monospace text-info">data-ad-id</td>
+                                <td><code>string (custom name)</code></td>
+                                <td>Unique identifier used for revenue segmentation in your analytics.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reporting -->
+            <section id="reporting" class="mb-5 scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-graph-up-arrow text-success"></i> REST Reporting API
+                </h4>
+                <p class="text-secondary">
+                    Fetch programmatic impression and earnings metrics using our authenticated REST endpoints:
+                </p>
+
+                <div class="position-relative mb-3">
+                    <pre class="p-3 rounded-3 font-monospace text-info small mb-0" style="background: rgba(0,0,0,0.5); border: 1px solid var(--border-glass);"><code>curl -X GET "https://adchain.network/api/v1/publisher/stats" \
+     -H "Authorization: Bearer YOUR_API_KEY" \
+     -H "Content-Type: application/json"</code></pre>
+                </div>
+
+                <div class="p-3 rounded-3" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle);">
+                    <small class="text-muted d-block mb-1 font-monospace">JSON Response:</small>
+                    <pre class="font-monospace text-success small mb-0"><code>{
+  "status": "success",
+  "data": {
+    "total_impressions": 128450,
+    "earnings_eth": "1.2845",
+    "earnings_tokens": "128450.00",
+    "verified_smart_contract_txs": 384
+  }
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section id="faq" class="scroll-margin">
+                <h4 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-question-circle text-info"></i> Frequently Asked Questions
+                </h4>
+                <div class="accordion" id="docsFaq">
+                    <div class="accordion-item glass-card mb-2 border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button bg-transparent text-white shadow-none fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How fast are impression rewards credited?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#docsFaq">
+                            <div class="accordion-body text-secondary small pt-0">
+                                As soon as a user views an ad on your website, a zero-gas cryptographic proof is generated and recorded. Balances update immediately on the dashboard and are backed by smart contract escrow.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item glass-card mb-2 border-0">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button bg-transparent text-white shadow-none fw-semibold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                Can I place multiple ad slots on one page?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#docsFaq">
+                            <div class="accordion-body text-secondary small pt-0">
+                                Yes! You can include multiple <code>.adchain-slot</code> elements on any single page. Each slot with a distinct <code>data-ad-id</code> will track independently.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
 </div>
+
+<style>
+    .scroll-margin {
+        scroll-margin-top: 100px;
+    }
+    .docs-nav .nav-link:hover {
+        background: rgba(0, 240, 255, 0.08) !important;
+        color: var(--accent-cyan) !important;
+    }
+    .accordion-button::after {
+        filter: invert(1);
+    }
+</style>
 {% endblock %}

@@ -1,113 +1,288 @@
-
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Publisher Dashboard - AdChain{% endblock %}
+{% block title %}Publisher Dashboard - AdChain Web3 Network{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- 📍 Column 1: Publisher Info + Quick Stats -->
-    <div class="col-lg-4">
-        <!-- 🔐 Wallet Info -->
-        <div class="wallet-info p-4 rounded border border-success shadow-sm mb-4" 
-             style="background-color: #111827; box-shadow: 0 0 15px rgba(128, 255, 0, 0.3);">
-            <h5 class="fw-bold mb-3" style="color: #80ff00;">
-                <i class="bi bi-camera-video-fill me-2"></i>Publisher Dashboard
-            </h5>
-            <div class="mb-2">
-                <small class="text-muted">Wallet</small><br>
-                <span class="fw-semibold text-success">
-                    {{ user_profile.wallet_address|slice:":6" }}...{{ user_profile.wallet_address|slice:"-4:" }}
-                </span>
-            </div>
-            <div class="mb-2">
-                <small class="text-muted">ETH Balance</small><br>
-                <span class="fw-semibold text-info" id="ethBalance">{{ user_profile.eth_balance }} ETH</span>
-            </div>
-            <div>
-                <small class="text-muted">ADC Token Balance</small><br>
-                <span class="fw-semibold text-info" id="tokenBalance">{{ user_profile.token_balance }} ADC</span>
-            </div>
+<!-- Dashboard Header Area -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-2 border-bottom border-secondary border-opacity-25">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <span class="badge role-badge-publisher font-monospace">PUBLISHER PORTAL</span>
+            <span class="status-dot-pulse"></span>
+            <span class="text-success small fw-semibold">Live Protocol Sync</span>
         </div>
+        <h2 class="display-6 fw-extrabold mb-0">Publisher Analytics Dashboard</h2>
+    </div>
 
-        <!-- 📊 Quick Stats -->
-        <div class="p-3 bg-dark text-white border border-success rounded shadow-sm">
-            <h6 class="text-success mb-3"><i class="bi bi-bar-chart-line me-2"></i>Quick Stats</h6>
-            <div class="d-flex justify-content-between">
-                <span>Total Videos:</span>
-                <strong>{{ videos.count }}</strong>
+    <!-- Quick Actions -->
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="btn btn-web3-outline btn-sm py-2 px-3" data-bs-toggle="modal" data-bs-target="#apiKeyModal">
+            <i class="bi bi-key-fill text-warning"></i> Manage API Keys
+        </button>
+        <a href="{% url 'docs' %}" class="btn btn-web3-cyan btn-sm py-2 px-3">
+            <i class="bi bi-code-square"></i> SDK Docs
+        </a>
+    </div>
+</div>
+
+<!-- 4 Animated Metric Cards -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Videos -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card-gradient">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon-wrapper stat-icon-indigo">
+                    <i class="bi bi-collection-play-fill"></i>
+                </div>
+                <span class="badge bg-secondary bg-opacity-25 text-info small">Active Catalog</span>
             </div>
-            <div class="d-flex justify-content-between">
-                <span>Total Impressions:</span>
-                <strong id="totalImpressions">
-                    {% for video in videos %}{{ video.impressions }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}
-                </strong>
-            </div>
-            <div class="d-flex justify-content-between">
-                <span>Total Earnings:</span>
-                <strong id="totalEarnings">
-                    {% for video in videos %}{{ video.earnings_eth }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %} ETH
-                </strong>
-            </div>
+            <div class="stat-value text-white">{{ videos.count }}</div>
+            <div class="stat-label">Total Videos Uploaded</div>
         </div>
     </div>
 
-    <!-- 📍 Column 2: Videos -->
-    <div class="col-lg-6">
-        <h4 class="text-white mb-4"><i class="bi bi-collection-play me-2"></i> Videos</h4>
+    <!-- Card 2: Total Impressions -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card-gradient">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon-wrapper stat-icon-cyan">
+                    <i class="bi bi-eye-fill"></i>
+                </div>
+                <span class="badge bg-secondary bg-opacity-25 text-info small">+12% this wk</span>
+            </div>
+            <div class="stat-value text-info" id="totalImpressions">
+                {% for video in videos %}{{ video.impressions }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %}
+            </div>
+            <div class="stat-label">Verified Impressions</div>
+        </div>
+    </div>
+
+    <!-- Card 3: ETH Earnings -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card-gradient">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon-wrapper stat-icon-emerald">
+                    <i class="bi bi-currency-exchange"></i>
+                </div>
+                <span class="badge bg-success bg-opacity-20 text-success small font-monospace">ETH</span>
+            </div>
+            <div class="stat-value text-success font-monospace" id="ethBalance">
+                {{ user_profile.eth_balance }} ETH
+            </div>
+            <div class="stat-label">ETH Balance / Total: <span id="totalEarnings">{% for video in videos %}{{ video.earnings_eth }}{% if not forloop.last %}+{% endif %}{% empty %}0{% endfor %} ETH</span></div>
+        </div>
+    </div>
+
+    <!-- Card 4: ADC Token Earnings -->
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card-gradient">
+            <div class="d-flex justify-content-between align-items-start">
+                <div class="stat-icon-wrapper stat-icon-purple">
+                    <i class="bi bi-coin"></i>
+                </div>
+                <span class="badge bg-purple bg-opacity-20 text-purple small font-monospace" style="color: #c084fc;">ADC</span>
+            </div>
+            <div class="stat-value text-white font-monospace" id="tokenBalance">
+                {{ user_profile.token_balance }} ADC
+            </div>
+            <div class="stat-label">ADC Token Balance</div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div class="row g-4">
+    <!-- Left Column: Publisher Info + Performance Chart -->
+    <div class="col-lg-4">
+        <!-- Account Overview Card -->
+        <div class="glass-card p-4 mb-4 glow-pulse-cyan">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="brand-icon-box" style="width: 48px; height: 48px;">
+                    <i class="bi bi-person-bounding-box fs-4 text-info"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-white mb-0">Publisher Profile</h5>
+                    <small class="text-secondary font-monospace">{{ user_profile.user.username }}</small>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-3 mb-3" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle);">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="text-muted small">Connected Wallet:</span>
+                    <button type="button" class="btn btn-link p-0 text-info copy-wallet-btn small" data-copy-text="{{ user_profile.wallet_address }}" title="Copy Address">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+                <div class="font-monospace text-info small text-truncate">
+                    {{ user_profile.wallet_address }}
+                </div>
+            </div>
+
+            <div class="d-flex flex-column gap-2 small text-secondary">
+                <div class="d-flex justify-content-between">
+                    <span>Reward Rate / Impression:</span>
+                    <strong class="text-white font-monospace">0.01 ETH + 100 ADC</strong>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Smart Contract Status:</span>
+                    <span class="text-success"><i class="bi bi-shield-check"></i> Connected</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Impressions Performance Chart Container -->
+        <div class="glass-card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold text-white mb-0">
+                    <i class="bi bi-graph-up text-info me-1"></i> Impression Growth
+                </h6>
+                <span class="badge bg-secondary bg-opacity-25 text-muted small">Simulated Feed</span>
+            </div>
+            <div style="height: 180px; position: relative;">
+                <canvas id="publisherChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Developer Integration CTA -->
+        <div class="glass-card p-4" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(0, 240, 255, 0.05) 100%);">
+            <h6 class="fw-bold text-white mb-2">
+                <i class="bi bi-box-seam text-info me-1"></i> Monetize Your Website
+            </h6>
+            <p class="text-secondary small mb-3">
+                Add a 1-line script tag to your web pages to start streaming AdChain ads and earning instant tokens.
+            </p>
+            <a href="{% url 'docs' %}" class="btn btn-web3-outline btn-sm w-100">
+                <i class="bi bi-book-half me-1"></i> View Integration Guide
+            </a>
+        </div>
+    </div>
+
+    <!-- Right Column: Video Catalog & Interactive Simulation -->
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold text-white mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-collection-play-fill text-info"></i> Your Content & Video Inventory
+            </h4>
+            <span class="badge bg-secondary bg-opacity-25 text-secondary font-monospace">{{ videos.count }} Active</span>
+        </div>
 
         {% if videos %}
-            <div class="row">
+            <div class="row g-4">
                 {% for video in videos %}
                 <div class="col-md-6">
-                    <div class="bg-dark text-white border border-secondary rounded p-3 mb-4 shadow-sm">
-                        <h6 class="text-success">{{ video.title }}</h6>
-                        <p class="text-muted small mb-2">
-                            <i class="bi bi-calendar-event me-1"></i> Uploaded: {{ video.uploaded_at|date:"M d, Y" }}
-                        </p>
-
-                        <div class="mb-2">
-                            <small class="text-muted">Performance:</small>
-                            <div class="d-flex justify-content-between">
-                                <span>Impressions:</span>
-                                <strong class="text-info impressions-count" data-video-id="{{ video.id }}">{{ video.impressions }}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Earnings (ETH):</span>
-                                <strong class="text-info earnings-eth" data-video-id="{{ video.id }}">{{ video.earnings_eth }}</strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Earnings (ADC):</span>
-                                <strong class="text-info earnings-tokens" data-video-id="{{ video.id }}">{{ video.earnings_tokens }}</strong>
+                    <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                        <!-- Video Player Preview Container -->
+                        <div class="position-relative overflow-hidden" style="background: #000; height: 180px; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                            <video src="{{ video.video_file.url }}" controls class="w-100 h-100" style="object-fit: cover;" preload="metadata"></video>
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <span class="badge bg-dark bg-opacity-75 border border-secondary text-light font-monospace small">
+                                    ID #{{ video.id }}
+                                </span>
                             </div>
                         </div>
 
-                        <div class="btn-group w-100">
-                            <a href="{{ video.video_file.url }}" class="btn btn-outline-light btn-sm" target="_blank">
-                                👁️ View
-                            </a>
-                            <button class="btn btn-success btn-sm simulate-view" data-video-id="{{ video.id }}">
-                                🎯 Simulate Ad View
-                            </button>
+                        <!-- Card Body -->
+                        <div class="p-4 flex-grow-1 d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="fw-bold text-white mb-1 text-truncate" title="{{ video.title }}">{{ video.title }}</h5>
+                                <p class="text-muted small mb-3">
+                                    <i class="bi bi-calendar-event me-1"></i> Uploaded: {{ video.uploaded_at|date:"M d, Y" }}
+                                </p>
+
+                                <!-- Performance Metrics Grid -->
+                                <div class="p-3 rounded-3 mb-3" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle);">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small text-secondary"><i class="bi bi-eye text-info me-1"></i> Impressions:</span>
+                                        <strong class="text-info font-monospace impressions-count" data-video-id="{{ video.id }}">{{ video.impressions }}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small text-secondary"><i class="bi bi-currency-exchange text-success me-1"></i> Earnings (ETH):</span>
+                                        <strong class="text-success font-monospace earnings-eth" data-video-id="{{ video.id }}">{{ video.earnings_eth }}</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="small text-secondary"><i class="bi bi-coin text-purple me-1" style="color: #c084fc;"></i> Earnings (ADC):</span>
+                                        <strong class="text-info font-monospace earnings-tokens" data-video-id="{{ video.id }}">{{ video.earnings_tokens }}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex gap-2 mt-2">
+                                <a href="{{ video.video_file.url }}" class="btn btn-web3-outline btn-sm flex-fill" target="_blank">
+                                    <i class="bi bi-fullscreen me-1"></i> Open
+                                </a>
+                                <button class="btn btn-web3-emerald btn-sm flex-fill simulate-view" data-video-id="{{ video.id }}">
+                                    <i class="bi bi-play-circle me-1"></i> Simulate Ad View
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         {% else %}
-            <div class="text-center py-5">
-                <h5 class="text-white">No videos uploaded yet</h5>
-                <p class="">Connect SDK to start earning!</p>
+            <!-- Empty State -->
+            <div class="glass-card p-5 text-center">
+                <div class="stat-icon-wrapper stat-icon-indigo mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.8rem;">
+                    <i class="bi bi-camera-video-off"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-2">No Videos in Inventory</h4>
+                <p class="text-secondary small mb-4" style="max-width: 450px; margin: 0 auto;">
+                    Upload videos through an advertiser account or connect your media feed to start serving decentralized ad impressions.
+                </p>
+                <a href="{% url 'docs' %}" class="btn btn-web3-primary">
+                    <i class="bi bi-code-slash me-1"></i> Read Publisher SDK Setup
+                </a>
             </div>
         {% endif %}
     </div>
-
-  
-
 </div>
-
 {% endblock %}
+
 {% block extra_js %}
 <script>
+    // Publisher Performance Chart
+    const pubCtx = document.getElementById('publisherChart');
+    if (pubCtx) {
+        const pCtx = pubCtx.getContext('2d');
+        const pubGradient = pCtx.createLinearGradient(0, 0, 0, 180);
+        pubGradient.addColorStop(0, 'rgba(99, 102, 241, 0.35)');
+        pubGradient.addColorStop(1, 'rgba(99, 102, 241, 0)');
+
+        new Chart(pCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Impressions',
+                    data: [65, 89, 120, 145, 190, 230, 310],
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    backgroundColor: pubGradient,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.03)', drawBorder: false },
+                        ticks: { color: '#64748b', font: { size: 10 } }
+                    }
+                }
+            }
+        });
+    }
+
     // Simulate ad view functionality
     document.addEventListener('DOMContentLoaded', function() {
         const simulateButtons = document.querySelectorAll('.simulate-view');
@@ -115,11 +290,11 @@
         simulateButtons.forEach(button => {
             button.addEventListener('click', async function() {
                 const videoId = this.dataset.videoId;
-                const originalText = this.textContent;
+                const originalHtml = this.innerHTML;
                 
-                // Disable button and show loading
+                // Disable button and show loading state
                 this.disabled = true;
-                this.textContent = '⏳ Processing...';
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
                 
                 try {
                     const response = await fetch(`/simulate_ad_view/${videoId}/`, {
@@ -132,47 +307,68 @@
                     const data = await response.json();
                     
                     if (data.success) {
-                        // Update video stats
-                        document.querySelector(`.impressions-count[data-video-id="${videoId}"]`).textContent = data.impressions;
-                        document.querySelector(`.earnings-eth[data-video-id="${videoId}"]`).textContent = data.earnings_eth;
-                        document.querySelector(`.earnings-tokens[data-video-id="${videoId}"]`).textContent = data.earnings_tokens;
+                        // Update video stats elements
+                        const impEl = document.querySelector(`.impressions-count[data-video-id="${videoId}"]`);
+                        if (impEl) impEl.textContent = data.impressions;
+
+                        const ethEl = document.querySelector(`.earnings-eth[data-video-id="${videoId}"]`);
+                        if (ethEl) ethEl.textContent = data.earnings_eth;
+
+                        const tokEl = document.querySelector(`.earnings-tokens[data-video-id="${videoId}"]`);
+                        if (tokEl) tokEl.textContent = data.earnings_tokens;
                         
-                        // Update user balance
-                        document.getElementById('ethBalance').textContent = data.publisher_eth_balance;
-                        document.getElementById('tokenBalance').textContent = data.publisher_token_balance;
+                        // Update user balance cards
+                        const ethBal = document.getElementById('ethBalance');
+                        if (ethBal) ethBal.textContent = `${data.publisher_eth_balance} ETH`;
+
+                        const tokBal = document.getElementById('tokenBalance');
+                        if (tokBal) tokBal.textContent = `${data.publisher_token_balance} ADC`;
                         
-                        // Show success message
-                        showAlert('success', 'Ad view simulated! Earnings updated.');
+                        if (window.showToast) {
+                            window.showToast('Ad view verified on-chain! +0.01 ETH, +100 ADC awarded.', 'success');
+                        } else {
+                            showAlert('success', 'Ad view simulated! Earnings updated.');
+                        }
                     } else {
-                        showAlert('danger', 'Error simulating ad view.');
+                        if (window.showToast) {
+                            window.showToast('Error simulating ad view.', 'danger');
+                        } else {
+                            showAlert('danger', 'Error simulating ad view.');
+                        }
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    showAlert('danger', 'Network error occurred.');
+                    if (window.showToast) {
+                        window.showToast('Network error occurred.', 'danger');
+                    } else {
+                        showAlert('danger', 'Network error occurred.');
+                    }
                 }
                 
                 // Re-enable button
                 this.disabled = false;
-                this.textContent = originalText;
+                this.innerHTML = originalHtml;
             });
         });
     });
 
     function showAlert(type, message) {
+        if (window.showToast) {
+            window.showToast(message, type);
+            return;
+        }
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
         alertDiv.innerHTML = `
             ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
         `;
         
-        const container = document.querySelector('.container');
-        container.insertBefore(alertDiv, container.firstChild);
-        
-        // Auto-dismiss after 3 seconds
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 3000);
+        const container = document.querySelector('main');
+        if (container) {
+            container.insertBefore(alertDiv, container.firstChild);
+            setTimeout(() => { alertDiv.remove(); }, 3500);
+        }
     }
 
     function getCookie(name) {
@@ -190,4 +386,4 @@
         return cookieValue;
     }
 </script>
-{% endblock %}  
+{% endblock %}
