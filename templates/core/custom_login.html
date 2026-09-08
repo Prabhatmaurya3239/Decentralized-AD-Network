@@ -1,47 +1,55 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %} Login {% endblock %}
+{% block title %}Login - AdChain{% endblock %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 90vh;">
-    <div class="card shadow p-4 text-white" 
-         style="max-width: 500px; width: 100%; border-radius: 15px; background-color: #1e1e2f; border: 1px solid #2d2d3f;">
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh; position: relative; z-index: 5;">
+    <div class="glass-card shadow-lg p-5 w-100" style="max-width: 480px; background: rgba(14, 14, 19, 0.75);">
         
-        <h3 class="text-center mb-4 text-success">🔐 Login</h3>
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center mb-3" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(124, 58, 237, 0.2); width: 60px; height: 60px; border-radius: 16px;">
+                <i class="bi bi-shield-lock-fill text-primary" style="font-size: 1.75rem;"></i>
+            </div>
+            <h3 class="text-white fw-bold">Platform Login</h3>
+            <p class="text-light small">Verify username/password along with your active MetaMask wallet signature.</p>
+        </div>
 
         <form method="POST">
             {% csrf_token %}
             
             <!-- Username / Email -->
             <div class="mb-3">
-                <label class="form-label text-light">Username / Email</label>
-                <input type="text" name="username_or_email" class="form-control bg-dark text-white border-secondary" required>
+                <label class="form-label text-light small fw-semibold">Username or Email</label>
+                <input type="text" name="username_or_email" class="form-control text-white border-secondary bg-dark bg-opacity-40 py-2.5 rounded-3" style="border-color: rgba(255,255,255,0.08) !important;" required>
             </div>
 
             <!-- Wallet Address with Connect Button -->
             <div class="mb-3">
-                <label class="form-label text-light">Wallet Address</label>
-                <div class="d-flex">
+                <label class="form-label text-light small fw-semibold">Connected MetaMask Wallet</label>
+                <div class="position-relative d-flex align-items-center">
                     <input type="text" id="walletAddress" name="wallet_address" 
-                           class="form-control bg-dark text-white border-secondary" 
-                           placeholder="Click connect to fetch wallet" readonly required>
+                           class="form-control text-white border-secondary bg-dark bg-opacity-40 py-2.5 rounded-3 pe-5" 
+                           style="border-color: rgba(255,255,255,0.08) !important; font-family: monospace; font-size: 0.85rem;" 
+                           placeholder="Please connect wallet" readonly required>
                     
-                    <button type="button" id="connectWallet" class="btn btn-outline-success ms-2">
-                        Connect
-                    </button>
-                    <button type="button" id="disconnectWallet" class="btn btn-outline-danger ms-2 d-none">
-                        Disconnect
-                    </button>
+                    <div class="position-absolute" style="right: 8px;">
+                        <button type="button" id="connectWalletBtn" class="btn btn-sm btn-primary-glow px-3 py-1 rounded-2">
+                            Connect
+                        </button>
+                        <button type="button" id="disconnectWalletBtn" class="btn btn-sm btn-outline-danger px-3 py-1 rounded-2 d-none">
+                            Disconnect
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <!-- Password -->
-            <div class="mb-3">
-                <label class="form-label text-light">Password</label>
-                <input type="password" name="password" class="form-control bg-dark text-white border-secondary" required>
+            <div class="mb-4">
+                <label class="form-label text-light small fw-semibold">Password</label>
+                <input type="password" name="password" class="form-control text-white border-secondary bg-dark bg-opacity-40 py-2.5 rounded-3" style="border-color: rgba(255,255,255,0.08) !important;" required>
             </div>
 
-            <button type="submit" class="btn btn-success w-100 mt-3">Login</button>
+            <button type="submit" class="btn btn-primary-glow w-100 py-3 rounded-3 fw-bold">Sign In & Enter Dashboard</button>
         </form>
     </div>
 </div>
@@ -49,45 +57,47 @@
 
 {% block extra_js %}
 <script>
-    const connectBtn = document.getElementById("connectWallet");
-    const disconnectBtn = document.getElementById("disconnectWallet");
-    const walletInput = document.getElementById("walletAddress");
+    const connectWalletBtn = document.getElementById("connectWalletBtn");
+    const disconnectWalletBtn = document.getElementById("disconnectWalletBtn");
+    const walletAddressInput = document.getElementById("walletAddress");
 
-    // ✅ Connect wallet
-    connectBtn.addEventListener("click", async () => {
+    // Connect wallet handler
+    connectWalletBtn.addEventListener("click", async () => {
         if (typeof window.ethereum !== "undefined") {
             try {
                 const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
                 if (accounts.length > 0) {
-                    walletInput.value = accounts[0];  // autofill wallet
-                    connectBtn.classList.add("d-none");
-                    disconnectBtn.classList.remove("d-none");
+                    walletAddressInput.value = accounts[0];
+                    connectWalletBtn.classList.add("d-none");
+                    disconnectWalletBtn.classList.remove("d-none");
+                    showToast('Wallet address linked successfully!', 'success');
                 }
             } catch (err) {
                 console.error(err);
-                alert("⚠️ Wallet connection cancelled!");
+                showToast('Wallet linkage rejected by user.', 'danger');
             }
         } else {
-            alert("⚠️ Please install MetaMask extension in your browser!");
+            showToast('Please install MetaMask browser extension to log in.', 'warning');
         }
     });
 
-    // ✅ Disconnect wallet
-    disconnectBtn.addEventListener("click", () => {
-        walletInput.value = "";
-        disconnectBtn.classList.add("d-none");
-        connectBtn.classList.remove("d-none");
+    // Disconnect wallet handler
+    disconnectWalletBtn.addEventListener("click", () => {
+        walletAddressInput.value = "";
+        disconnectWalletBtn.classList.add("d-none");
+        connectWalletBtn.classList.remove("d-none");
+        showToast('Wallet address detached.', 'info');
     });
 
-    // ✅ Auto-check on page load (if already connected)
+    // Auto-check connected account on load
     window.addEventListener("load", async () => {
         if (typeof window.ethereum !== "undefined") {
             try {
                 const accounts = await window.ethereum.request({ method: "eth_accounts" });
                 if (accounts.length > 0) {
-                    walletInput.value = accounts[0];
-                    connectBtn.classList.add("d-none");
-                    disconnectBtn.classList.remove("d-none");
+                    walletAddressInput.value = accounts[0];
+                    connectWalletBtn.classList.add("d-none");
+                    disconnectWalletBtn.classList.remove("d-none");
                 }
             } catch (err) {
                 console.error(err);

@@ -5,11 +5,18 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from decimal import Decimal
 import json
+from django.conf import settings
 from django.contrib.auth import logout, login, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db import transaction
 from .models import UserProfile, Video, Campaign, APIKey
 from .forms import CustomLoginForm
+
+try:
+    from web3 import Web3
+except ImportError:  # pragma: no cover
+    Web3 = None
 
 def custom_login(request):
     if request.method == "POST":
@@ -72,6 +79,7 @@ def logout_view(request):
 
 
 def home(request):
+    from django.db.models import Sum
     wallet_address = request.session.get('wallet_address')
     user_profile = None
     
@@ -80,11 +88,26 @@ def home(request):
             user_profile = UserProfile.objects.get(wallet_address=wallet_address)
         except UserProfile.DoesNotExist:
             pass
+            
+    # Calculate real platform stats
+    total_publishers = UserProfile.objects.filter(role='publisher').count()
+    total_advertisers = UserProfile.objects.filter(role='advertiser').count()
+    total_campaigns = Campaign.objects.count()
+    total_impressions = Video.objects.aggregate(Sum('impressions'))['impressions__sum'] or 0
+    total_earnings_eth = Video.objects.aggregate(Sum('earnings_eth'))['earnings_eth__sum'] or 0
+    total_spend_eth = Campaign.objects.aggregate(Sum('spent_eth'))['spent_eth__sum'] or 0
     
     context = {
         'user_profile': user_profile,
         'wallet_address': wallet_address,
-        
+        'stats': {
+            'total_publishers': total_publishers,
+            'total_advertisers': total_advertisers,
+            'total_campaigns': total_campaigns,
+            'total_impressions': total_impressions,
+            'total_earnings_eth': float(total_earnings_eth),
+            'total_spend_eth': float(total_spend_eth),
+        }
     }
     return render(request, 'core/home.html', context)
 
@@ -184,19 +207,26 @@ def publisher_dashboard(request):
     }
     return render(request, 'core/publisher_dashboard.html', context)
 
-@csrf_exempt
+@login_required
 @require_POST
+@transaction.atomic
 def simulate_ad_view(request, video_id):
-    video = get_object_or_404(Video, id=video_id)
-    
-    # Simulate earnings: 0.01 ETH and 100 tokens per view
+    wallet_address = request.session.get('wallet_address')
+    video = get_object_or_404(
+        Video.objects.select_related('publisher'),
+        id=video_id,
+        publisher__wallet_address=wallet_address,
+        publisher__role='publisher',
+    )
+
+    # Demo price mirrors the dynamic-pricing panel until the contract is deployed.
+    impression_price = Decimal('0.00005')
     video.impressions += 1
-    video.earnings_eth += Decimal('0.01')
+    video.earnings_eth += impression_price
     video.earnings_tokens += Decimal('100')
     video.save()
-    
-    # Update publisher balance
-    video.publisher.eth_balance += Decimal('0.01')
+
+    video.publisher.eth_balance += impression_price
     video.publisher.token_balance += Decimal('100')
     video.publisher.save()
     
@@ -207,6 +237,7 @@ def simulate_ad_view(request, video_id):
         'earnings_tokens': str(video.earnings_tokens),
         'publisher_eth_balance': str(video.publisher.eth_balance),
         'publisher_token_balance': str(video.publisher.token_balance),
+        'impression_price': str(impression_price),
     })
     
 @login_required
@@ -232,12 +263,14 @@ def advertiser_dashboard(request):
             messages.success(request, 'Video uploaded successfully!')
             return redirect('advertiser_dashboard')
     
-    videos = Video.objects.filter(publisher=user_profile)
+    all_videos = Video.objects.all()
+    my_videos = Video.objects.filter(publisher=user_profile)
     campaigns = Campaign.objects.filter(advertiser=user_profile)
     
     context = {
         'user_profile': user_profile,
-        'videos': videos,
+        'videos': all_videos, # Used for placing ads on all publisher videos
+        'my_videos': my_videos, # The advertiser's own uploaded assets
         'campaigns': campaigns,
     }
     return render(request, 'core/advertiser_dashboard.html', context)
@@ -270,25 +303,70 @@ def create_campaign(request):
     wallet_address = request.session.get('wallet_address')
     if not wallet_address:
         return JsonResponse({'success': False, 'error': 'Not authenticated'})
-    
-    data = json.loads(request.body)
-    video_id = data.get('video_id')
-    budget = Decimal(str(data.get('budget', 0)))
-    
+
+    try:
+        payload = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        payload = {}
+
+    video_id = payload.get('video_id') or request.POST.get('video_id')
+    if not video_id:
+        return JsonResponse({'success': False, 'error': 'Please select an ad placement.'})
+
+    budget = Decimal(str(payload.get('budget') or request.POST.get('budget') or 0))
+    if budget <= 0:
+        return JsonResponse({'success': False, 'error': 'Budget must be greater than zero.'})
+
+    publisher_address = (payload.get('publisher_address') or payload.get('publisherWallet') or request.POST.get('publisher_address') or '').strip()
+    campaign_name = payload.get('campaign_name') or request.POST.get('campaign_name') or ''
+
     try:
         user_profile = UserProfile.objects.get(wallet_address=wallet_address, role='advertiser')
         video = Video.objects.get(id=video_id)
-        
+
+        if not publisher_address:
+            publisher_address = video.publisher.wallet_address
+
+        contract_address = getattr(settings, 'ADCHAIN_CONTRACT_ADDRESS', '')
+        contract_abi = getattr(settings, 'ADCHAIN_ABI', [])
+        if contract_address and contract_abi and Web3 is not None:
+            try:
+                provider = Web3(Web3.HTTPProvider(getattr(settings, 'ADCHAIN_RPC_URL', 'http://127.0.0.1:8545')))
+                contract = provider.eth.contract(address=contract_address, abi=contract_abi)
+                base_price = (budget / Decimal('1000')).quantize(Decimal('0.00000001'))
+                max_impressions = max(1, int((budget * Decimal('1000')).to_integral_value()))
+                value_wei = Web3.to_wei(float(budget), 'ether')
+                tx_hash = contract.functions.createCampaign(
+                    publisher_address,
+                    campaign_name or video.title,
+                    Web3.to_wei(float(base_price), 'ether'),
+                    max_impressions,
+                ).transact({
+                    'from': wallet_address,
+                    'value': value_wei,
+                })
+                provider.eth.wait_for_transaction_receipt(tx_hash)
+                return JsonResponse({
+                    'success': True,
+                    'campaign_id': None,
+                    'contract_tx': tx_hash.hex(),
+                    'publisher_address': publisher_address,
+                    'new_balance': str(user_profile.eth_balance)
+                })
+            except Exception as exc:
+                # Fall back to the app database flow when the contract is not reachable yet.
+                pass
+
         if user_profile.eth_balance >= budget:
             campaign = Campaign.objects.create(
                 advertiser=user_profile,
                 video=video,
                 budget_eth=budget
             )
-            
+
             user_profile.eth_balance -= budget
             user_profile.save()
-            
+
             return JsonResponse({
                 'success': True,
                 'campaign_id': campaign.id,
@@ -296,7 +374,7 @@ def create_campaign(request):
             })
         else:
             return JsonResponse({'success': False, 'error': 'Insufficient balance'})
-            
+
     except (UserProfile.DoesNotExist, Video.DoesNotExist):
         return JsonResponse({'success': False, 'error': 'Invalid request'})
 
